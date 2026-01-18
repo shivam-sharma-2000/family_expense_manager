@@ -1,19 +1,71 @@
+import 'dart:async';
+import 'package:expense_manager/features/expense/domain/usecases/add_expense.dart';
+import 'package:expense_manager/features/expense/domain/usecases/load_expense.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '../../../user/domain/repositories/user_repository.dart';
 import '../../domain/entities/expense.dart';
+import '../../domain/entities/expense_entity.dart';
 import '../../domain/repositories/expense_repository.dart';
 import 'expense_event.dart';
 import 'expense_state.dart';
 
-class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
-  final ExpenseRepository expenseRepository;
+class _ExpenseDraft {
+  final List<ExpenseEntity> expenses;
+  final double totalExpense;
 
-  ExpenseBloc({required this.expenseRepository}) : super(ExpenseInitial()) {
+  _ExpenseDraft({required this.expenses, required this.totalExpense});
+
+  factory _ExpenseDraft.fromState(ExpenseState state) {
+    return _ExpenseDraft(
+      expenses: state.expenses,
+      totalExpense: state.totalExpense,
+    );
+  }
+}
+
+class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
+  final LoadExpense loadExpense;
+  final AddExpense addExpense;
+
+  ExpenseBloc({required this.loadExpense, required this.addExpense})
+    : super(const ExpenseInitial()) {
+    // Set up event handlers
+    on<LoadExpensesEvent>(_onLoadExpenses);
     on<AddExpenseEvent>(_onAddExpense);
     on<UpdateExpenseEvent>(_onUpdateExpense);
     on<DeleteExpenseEvent>(_onDeleteExpense);
-    on<LoadExpensesEvent>(_onLoadExpenses);
-    on<LoadExpenseSummaryEvent>(_onLoadExpenseSummary);
+    on<SyncExpensesEvent>(_onSyncExpenses);
+    on<CheckConnectivityEvent>(_onCheckConnectivity);
+
+    // Initial load
+    add(const LoadExpensesEvent());
+  }
+
+  Future<void> _onLoadExpenses(
+    LoadExpensesEvent event,
+    Emitter<ExpenseState> emit,
+  ) async {
+    try {
+      // final draft = _ExpenseDraft.fromState(state);
+      emit(const ExpenseLoading());
+      final request = await loadExpense();
+      request.fold((failure) => emit(ExpenseError(message: failure.title)), (
+        expense,
+      ) {
+        var total = 0.0;
+        for (final expense in expense) {
+          total += expense.amount;
+        }
+        emit(ExpensesLoaded(expenses: expense, totalExpense: total));
+        return;
+      });
+    } catch (e) {
+      if (!isClosed) {
+        emit(ExpenseError(message: 'Unexpected error: $e'));
+      }
+    }
   }
 
   Future<void> _onAddExpense(
@@ -21,18 +73,22 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     Emitter<ExpenseState> emit,
   ) async {
     try {
-      emit(ExpenseLoading());
-      await expenseRepository.addExpense(event.expense);
-      final expenses = await expenseRepository.getAllExpenses();
-      final total = await expenseRepository.getTotalExpense();
-      
-      emit(ExpenseOperationSuccess(
-        message: 'Expense added successfully',
-        expenses: expenses,
-        totalExpense: total,
-      ));
+      final draft = _ExpenseDraft.fromState(state);
+      if (!event.expense.isValid) {
+        emit(const ExpenseError(message: 'Please fill in all required fields'));
+        return;
+      }
+
+      final res = await addExpense(event.expense);
+      res.fold(
+        (failure) => emit(ExpenseError(message: failure.title, expenses: draft.expenses, totalExpense: draft.totalExpense)),
+        (_) {
+          add(const LoadExpensesEvent());
+        },
+      );
     } catch (e) {
-      emit(ExpenseError('Failed to add expense: $e'));
+      emit(ExpenseError(message: 'Failed to add expense: $e'));
+      rethrow;
     }
   }
 
@@ -41,18 +97,16 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     Emitter<ExpenseState> emit,
   ) async {
     try {
-      emit(ExpenseLoading());
-      await expenseRepository.updateExpense(event.expense);
-      final expenses = await expenseRepository.getAllExpenses();
-      final total = await expenseRepository.getTotalExpense();
-      
-      emit(ExpenseOperationSuccess(
-        message: 'Expense updated successfully',
-        expenses: expenses,
-        totalExpense: total,
-      ));
+      if (!event.expense.isValid) {
+        emit(const ExpenseError(message: 'Please fill in all required fields'));
+        return;
+      }
+
+      // await expenseRepository.updateExpense(event.expense);
+      // State will be updated automatically through the stream
     } catch (e) {
-      emit(ExpenseError('Failed to update expense: $e'));
+      emit(ExpenseError(message: 'Failed to update expense: $e'));
+      rethrow;
     }
   }
 
@@ -61,65 +115,33 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     Emitter<ExpenseState> emit,
   ) async {
     try {
-      emit(ExpenseLoading());
-      await expenseRepository.deleteExpense(event.expenseId);
-      final expenses = await expenseRepository.getAllExpenses();
-      final total = await expenseRepository.getTotalExpense();
-      
-      emit(ExpenseOperationSuccess(
-        message: 'Expense deleted successfully',
-        expenses: expenses,
-        totalExpense: total,
-      ));
+      // await expenseRepository.deleteExpense(event.id);
+      // State will be updated automatically through the stream
     } catch (e) {
-      emit(ExpenseError('Failed to delete expense: $e'));
+      emit(ExpenseError(message: 'Failed to delete expense: $e'));
+      rethrow;
     }
   }
 
-  Future<void> _onLoadExpenses(
-    LoadExpensesEvent event,
+  Future<void> _onSyncExpenses(
+    SyncExpensesEvent event,
     Emitter<ExpenseState> emit,
   ) async {
     try {
-      emit(ExpenseLoading());
-      List<Expense> expenses;
-      
-      if (event.startDate != null && event.endDate != null) {
-        expenses = await expenseRepository.getExpensesByDateRange(
-          event.startDate!,
-          event.endDate!,
-        );
-      } else if (event.category != null) {
-        expenses = await expenseRepository.getExpensesByCategory(event.category!);
-      } else {
-        expenses = await expenseRepository.getAllExpenses();
-      }
-      
-      final total = await _calculateTotal(expenses);
-      
-      emit(ExpenseLoaded(
-        expenses: expenses,
-        totalExpense: total,
-      ));
+      // await expenseRepository.syncWithFirebase();
+      // State will be updated automatically through the stream
     } catch (e) {
-      emit(ExpenseError('Failed to load expenses: $e'));
+      // Don't show error to user, just log it
     }
   }
 
-  Future<void> _onLoadExpenseSummary(
-    LoadExpenseSummaryEvent event,
+  Future<void> _onCheckConnectivity(
+    CheckConnectivityEvent event,
     Emitter<ExpenseState> emit,
   ) async {
-    try {
-      emit(ExpenseLoading());
-      final total = await expenseRepository.getTotalExpense(
-        start: event.startDate,
-        end: event.endDate,
-      );
-      
-      emit(state.copyWith(totalExpense: total));
-    } catch (e) {
-      emit(ExpenseError('Failed to load expense summary: $e'));
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult != ConnectivityResult.none) {
+      add(const SyncExpensesEvent());
     }
   }
 

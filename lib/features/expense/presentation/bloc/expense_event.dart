@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/expense.dart';
+import '../../domain/entities/expense_entity.dart';
 
 abstract class ExpenseEvent extends Equatable {
   const ExpenseEvent();
@@ -9,16 +9,16 @@ abstract class ExpenseEvent extends Equatable {
 }
 
 class AddExpenseEvent extends ExpenseEvent {
-  final Expense expense;
+  final ExpenseEntity expense;
 
-  const AddExpenseEvent(this.expense);
+  const AddExpenseEvent({required this.expense});
 
   @override
   List<Object?> get props => [expense];
 }
 
 class UpdateExpenseEvent extends ExpenseEvent {
-  final Expense expense;
+  final ExpenseEntity expense;
 
   const UpdateExpenseEvent(this.expense);
 
@@ -27,38 +27,28 @@ class UpdateExpenseEvent extends ExpenseEvent {
 }
 
 class DeleteExpenseEvent extends ExpenseEvent {
-  final String expenseId;
+  final String id;
 
-  const DeleteExpenseEvent(this.expenseId);
+  const DeleteExpenseEvent(this.id);
 
   @override
-  List<Object?> get props => [expenseId];
+  List<Object?> get props => [id];
 }
 
 class LoadExpensesEvent extends ExpenseEvent {
-  final DateTime? startDate;
-  final DateTime? endDate;
-  final String? category;
+  final String? userId;
+  final String? familyId;
 
-  const LoadExpensesEvent({
-    this.startDate,
-    this.endDate,
-    this.category,
-  });
+  const LoadExpensesEvent({this.userId, this.familyId});
 
   @override
-  List<Object?> get props => [startDate, endDate, category];
+  List<Object?> get props => [userId, familyId];
 }
 
-class LoadExpenseSummaryEvent extends ExpenseEvent {
-  final DateTime? startDate;
-  final DateTime? endDate;
+class SyncExpensesEvent extends ExpenseEvent {
+  const SyncExpensesEvent();
+}
 
-  const LoadExpenseSummaryEvent({
-    this.startDate,
-    this.endDate,
-  });
-
-  @override
-  List<Object?> get props => [startDate, endDate];
+class CheckConnectivityEvent extends ExpenseEvent {
+  const CheckConnectivityEvent();
 }

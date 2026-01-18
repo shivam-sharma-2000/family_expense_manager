@@ -1,32 +1,47 @@
-import '../../../../core/utils/typedefs.dart';
+import 'dart:async';
 import '../entities/expense_entity.dart';
 
 /// Contract for the Expense feature's data layer
 abstract class ExpenseRepository {
   /// Adds a new expense
-  ResultFuture<ExpenseEntity> addExpense(ExpenseEntity expense);
-  
+  /// Will be saved locally first and synced with Firebase when online
+  // Future<bool> addExpense(ExpenseEntity expense);
+
+  Future<String> addExpense(ExpenseEntity expense);
+
   /// Updates an existing expense
-  ResultFuture<void> updateExpense(ExpenseEntity expense);
+  /// Will be updated locally first and synced with Firebase when online
+  Future<void> updateExpense(ExpenseEntity expense);
   
   /// Deletes an expense by its ID
-  ResultFuture<void> deleteExpense(String id);
+  /// Will be marked as deleted locally and synced with Firebase when online
+  Future<void> deleteExpense(String id);
   
   /// Retrieves all expenses
-  ResultFuture<List<ExpenseEntity>> getAllExpenses();
+  Future<List<ExpenseEntity>> getAllExpenses();
   
-  /// Retrieves expenses within a date range
-  ResultFuture<List<ExpenseEntity>> getExpensesByDateRange(
-    DateTime start, 
-    DateTime end,
-  );
+  /// Stream of expenses for real-time updates
+  Future<List<ExpenseEntity>> getExpenses({
+    String? userId,
+    String? familyId,
+  });
   
   /// Retrieves expenses by category
-  ResultFuture<List<ExpenseEntity>> getExpensesByCategory(String category);
+  /// Returns a Future for one-time fetch operations
+  Future<List<ExpenseEntity>> getExpensesByCategory(String category);
+  
+  /// Retrieves expenses within a date range
+  /// Returns a Future for one-time fetch operations
+  Future<List<ExpenseEntity>> getExpensesByDateRange(DateTime start, DateTime end);
   
   /// Calculates the total expense, optionally filtered by date range
-  ResultFuture<double> getTotalExpense({DateTime? start, DateTime? end});
+  /// Returns a Future for one-time calculation
+  Future<double> getTotalExpense({DateTime? start, DateTime? end});
+  
+  /// Syncs all local changes with Firebase
+  /// Call this when the app comes back online
+  Future<void> syncWithFirebase();
   
   /// Get all available expense categories
-  ResultFuture<List<String>> getExpenseCategories();
+  Future<List<String>> getExpenseCategories();
 }

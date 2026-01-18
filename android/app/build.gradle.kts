@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.example.expense_manager"
-    compileSdk = 35
+    compileSdk = 36
 //    ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
 

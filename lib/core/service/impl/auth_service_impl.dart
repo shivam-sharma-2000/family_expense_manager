@@ -1,19 +1,50 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:expense_manager/model/user_model.dart';
 
+import '../../enums/user_role.dart';
 import '../auth_service.dart';
+import '../i_local_storage_service.dart';
 import '../user_service.dart';
 
-class AuthServiceImpl implements AuthService {
+final class AuthServiceImpl implements AuthService {
   GoogleSignInAccount? _googleUser;
   static User? _user;
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
   final UserService _userService = UserService();
+  final ILocalStorageService _localStorageService;
 
-  AuthServiceImpl(this._auth, this._googleSignIn) {
+  AuthServiceImpl(this._auth, this._googleSignIn, this._localStorageService) {
     initializeGoogleSignIn();
+    _init();
+  }
+
+  // Notifier for the current auth state
+  final ValueNotifier<UserRole> _authStateNotifier = ValueNotifier(
+    UserRole.unknown,
+  );
+
+  void _init() async {
+    await Future.microtask(() async {
+      try {
+        final role = await _localStorageService.userRole;
+        _authStateNotifier.value = role;
+      } catch (e) {
+        _authStateNotifier.value = UserRole.unauthenticated;
+      }
+    });
+  }
+
+  @override
+  Future<UserRole> get currentRole async {
+    try {
+      final role = await _localStorageService.userRole;
+      return role;
+    } catch (e) {
+      return UserRole.unauthenticated;
+    }
   }
 
   @override
@@ -53,7 +84,11 @@ class AuthServiceImpl implements AuthService {
         final credential = GoogleAuthProvider.credential(idToken: idToken, accessToken: accessToken);
         UserCredential userCredential = await _auth.signInWithCredential(credential);
         _user = userCredential.user;
-
+        _authStateNotifier.value = UserRole.authenticated;
+        _localStorageService.setUserRole(UserRole.authenticated);
+        if(_user != null){
+          _localStorageService.setUserId(_user!.uid);
+        }
       } else {
         // Handle web platform differently
         print('This platform requires platform-specific sign-in UI');
@@ -77,9 +112,11 @@ class AuthServiceImpl implements AuthService {
         email: email.trim(),
         password: password.trim(),
       );
-
       _user = credentials.user;
-      print("✅ User signed in: ${_user?.email}");
+      _localStorageService.setUserRole(UserRole.authenticated);
+      if(_user != null){
+        _localStorageService.setUserId(_user!.uid);
+      }
       return _user;
     } on FirebaseAuthException catch (e) {
       print('Login Error: ${e.message}');
@@ -108,6 +145,10 @@ class AuthServiceImpl implements AuthService {
         );
       }
 
+      _localStorageService.setUserRole(UserRole.authenticated);
+      if(credential.user != null){
+        _localStorageService.setUserId(credential.user!.uid);
+      }
       return credential.user;
     } on FirebaseAuthException catch (e) {
       print('Registration Error: ${e.message}');
