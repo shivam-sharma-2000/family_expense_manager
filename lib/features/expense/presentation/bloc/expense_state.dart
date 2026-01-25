@@ -1,22 +1,19 @@
 import 'package:equatable/equatable.dart';
+import 'package:expense_manager/features/expense/domain/entities/expense_summary.dart';
 import '../../domain/entities/expense_entity.dart';
 
 abstract class ExpenseState extends Equatable {
-  final List<ExpenseEntity> expenses;
-  final double totalExpense;
-
-  const ExpenseState({this.expenses = const [], this.totalExpense = 0.0});
-
+  const ExpenseState();
   @override
-  List<Object?> get props => [expenses, totalExpense];
+  List<Object?> get props => [];
 }
 
 class ExpenseInitial extends ExpenseState {
-  const ExpenseInitial({super.expenses = const [], super.totalExpense = 0.0});
+  const ExpenseInitial();
 }
 
 class ExpenseLoading extends ExpenseState {
-  const ExpenseLoading({super.expenses, super.totalExpense});
+  const ExpenseLoading();
 }
 
 class ExpenseError extends ExpenseState {
@@ -24,16 +21,23 @@ class ExpenseError extends ExpenseState {
 
   const ExpenseError({
     required this.message,
-    super.expenses,
-    super.totalExpense,
   });
 
   @override
   List<Object?> get props => [message];
 }
 
-class ExpensesLoaded extends ExpenseState {
-  const ExpensesLoaded({super.expenses, super.totalExpense});
+class ExpenseLoaded extends ExpenseState {
+  final List<ExpenseEntity> expenses;
+  final ExpenseSummary expenseSummary;
+
+  const ExpenseLoaded({
+    required this.expenses,
+    required this.expenseSummary,
+  });
+
+  @override
+  List<Object?> get props => [expenses, expenseSummary];
 }
 
 class ExpenseAdded extends ExpenseState {
@@ -41,31 +45,13 @@ class ExpenseAdded extends ExpenseState {
 
   const ExpenseAdded({
     required this.expenseId,
-    super.expenses,
-    super.totalExpense,
   });
 
   @override
   List<Object?> get props => [expenseId];
 }
 
-class ExpenseSuccess extends ExpenseState {
-
-  const ExpenseSuccess({
-    super.expenses,
-    super.totalExpense,
-  });
+class AddExpenseSuccess extends ExpenseState {
+  const AddExpenseSuccess();
 }
 
-// class ExpenseSummaryLoaded extends ExpenseState {
-//   final double totalExpense;
-//   final List<String> categories;
-//
-//   const ExpenseSummaryLoaded({
-//     required this.totalExpense,
-//     required this.categories,
-//   });
-//
-//   @override
-//   List<Object?> get props => [totalExpense, categories];
-// }

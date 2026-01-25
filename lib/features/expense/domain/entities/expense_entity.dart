@@ -72,5 +72,5 @@ class ExpenseEntity extends Equatable {
       ];
   
   // Helper method to check if expense is valid
-  bool get isValid => title.isNotEmpty && amount > 0 && category.isNotEmpty;
+  bool get isValid => title.isNotEmpty && category.isNotEmpty;
 }

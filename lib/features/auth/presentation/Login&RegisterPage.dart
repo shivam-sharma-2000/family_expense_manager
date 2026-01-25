@@ -1,14 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sqflite/sqflite.dart';
 import '../../../app/routes/my_app_router_const.dart';
-import '../../../core/di/injection_container.dart';
-import '../../../core/service/auth_service.dart';
-import '../../../database/DBHelper.dart';
 import 'LoginPage.dart';
 import 'bloc/auth_bloc.dart';
 
@@ -516,9 +510,12 @@ class _LoginAndRegisterPageState extends State<LoginAndRegisterPage> {
                         context.pushReplacement(MyAppRouteConst.home);
                       }
                       if (state is AuthFailure) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(state.message)),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(state.message)));
+                        setState(() {
+                          _isLoading = false;
+                        });
                       }
                     },
                     builder: (BuildContext context, AuthState state) {
@@ -538,20 +535,20 @@ class _LoginAndRegisterPageState extends State<LoginAndRegisterPage> {
                           ),
                           child: _isLoading
                               ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
                               : Text(
-                            'Create Account',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                                  'Create Account',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       );
                     },

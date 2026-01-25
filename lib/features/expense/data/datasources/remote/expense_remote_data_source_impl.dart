@@ -10,7 +10,7 @@ class ExpenseRemoteDataSourceImpl implements ExpenseRemoteDataSource {
 
   @override
   Future<List<ExpenseModel>> getExpenses() async {
-    final snapshot = await _firebaseFirestore.collection('expenses').get();
+    final snapshot = await _firebaseFirestore.collection('transactions').get();
     return snapshot.docs.map((doc) {
       return ExpenseModel.fromMap(doc.data());
     }).toList();
@@ -19,7 +19,7 @@ class ExpenseRemoteDataSourceImpl implements ExpenseRemoteDataSource {
   @override
   Future<String> addExpense(ExpenseModel expense) async {
     final docRef = await _firebaseFirestore
-        .collection('expenses')
+        .collection('transactions')
         .add(expense.toMap());
 
     return docRef.id;

@@ -14,22 +14,29 @@ import 'data/datasources/remote/expense_remote_data_source_impl.dart';
 void registerExpenseModule(GetIt sl) {
   // Data layer
   sl.registerLazySingleton<ExpenseRemoteDataSource>(
-        () => ExpenseRemoteDataSourceImpl(firebaseFirestore: sl<FirebaseFirestore>()),
+    () =>
+        ExpenseRemoteDataSourceImpl(firebaseFirestore: sl<FirebaseFirestore>()),
   );
   sl.registerLazySingleton<ExpenseRepository>(
-        () => ExpenseRepositoryImpl(databaseHelper: sl<DatabaseHelper>(), remote: sl<ExpenseRemoteDataSource>()),
+    () => ExpenseRepositoryImpl(
+      databaseHelper: sl<DatabaseHelper>(),
+      remote: sl<ExpenseRemoteDataSource>(),
+    ),
   );
 
   // Domain layer
   sl.registerLazySingleton<LoadExpense>(
-        () => LoadExpense(repository: sl<ExpenseRepository>()),
+    () => LoadExpense(repository: sl<ExpenseRepository>()),
   );
   sl.registerLazySingleton<AddExpense>(
-        () => AddExpense(repository: sl<ExpenseRepository>()),
+    () => AddExpense(repository: sl<ExpenseRepository>()),
   );
 
   // Presentation layer
   sl.registerLazySingleton<ExpenseBloc>(
-        () => ExpenseBloc(loadExpense: sl<LoadExpense>(), addExpense: sl<AddExpense>()),
+    () => ExpenseBloc(
+      loadExpense: sl<LoadExpense>(),
+      addExpense: sl<AddExpense>(),
+    ),
   );
 }

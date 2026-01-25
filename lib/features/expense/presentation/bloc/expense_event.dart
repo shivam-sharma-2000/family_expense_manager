@@ -45,10 +45,3 @@ class LoadExpensesEvent extends ExpenseEvent {
   List<Object?> get props => [userId, familyId];
 }
 
-class SyncExpensesEvent extends ExpenseEvent {
-  const SyncExpensesEvent();
-}
-
-class CheckConnectivityEvent extends ExpenseEvent {
-  const CheckConnectivityEvent();
-}

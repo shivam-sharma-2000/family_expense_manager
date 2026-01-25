@@ -1,19 +1,18 @@
 import 'package:expense_manager/app/routes/my_app_router_const.dart';
 import 'package:expense_manager/features/expense/domain/entities/expense_entity.dart';
+import 'package:expense_manager/features/expense/presentation/widgets/bar_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:pie_chart/pie_chart.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../database/DBHelper.dart';
 import '../../features/auth/presentation/LoginPage.dart';
 import '../../features/expense/presentation/bloc/expense_bloc.dart';
 import '../../features/expense/presentation/bloc/expense_event.dart';
 import '../../features/expense/presentation/bloc/expense_state.dart';
-import 'TransactionDetails.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -39,14 +38,12 @@ class _HomePageState extends State<HomePage> {
 
   // Modern color scheme
   static const Color primaryColor = Color(0xFF6C63FF);
-  static const Color secondaryColor = Color(0xFF4F46E5);
   static const Color successColor = Color(0xFF10B981);
   static const Color errorColor = Color(0xFFEF4444);
   static const Color backgroundColor = Color(0xFFF8FAFC);
   static const Color cardColor = Colors.white;
   static const Color textPrimary = Color(0xFF1E293B);
   static const Color textSecondary = Color(0xFF64748B);
-  static const Color borderColor = Color(0xFFE2E8F0);
 
   // Modern text styles
   final TextStyle heading1 = GoogleFonts.poppins(
@@ -101,29 +98,12 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  late final expenseBloc;
+  late final expenseBloc = context.read<ExpenseBloc>();
+
   @override
   void initState() {
     super.initState();
-    // Initialize database and load initial data
-    // initializeDB().then((_) {
-    //   // Load initial data
-    //   // Set up periodic refresh (e.g., every 30 seconds)
-    //   _setupDataRefresh();
-    // });
-    expenseBloc = context.read<ExpenseBloc>();
     expenseBloc.add(const LoadExpensesEvent());
-
-  }
-
-  void _setupDataRefresh() {
-    // Refresh data every 30 seconds
-    Future.delayed(const Duration(seconds: 30), () {
-      if (mounted) {
-        context.read<ExpenseBloc>().add(const LoadExpensesEvent());
-        _setupDataRefresh();
-      }
-    });
   }
 
   Future<void> initializeDB() async {
@@ -143,17 +123,21 @@ class _HomePageState extends State<HomePage> {
             context,
           ).showSnackBar(SnackBar(content: Text(state.message)));
         }
-        if (state is ExpensesLoaded) {
+        if (state is ExpenseLoaded) {
           setState(() {
-            dBalance = state.totalExpense;
+            dBalance = state.expenseSummary.totalExpense;
+            cBalance = state.expenseSummary.totalIncome;
           });
+        }
+        if (state is AddExpenseSuccess) {
+          expenseBloc.add(const LoadExpensesEvent());
         }
       },
       builder: (context, state) {
         return Scaffold(
           body: RefreshIndicator(
             onRefresh: () async {
-              context.read<ExpenseBloc>().add(const LoadExpensesEvent());
+              expenseBloc.add(const LoadExpensesEvent());
               return Future.delayed(const Duration(seconds: 1));
             },
             backgroundColor: backgroundColor,
@@ -178,7 +162,7 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.5),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -201,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.5),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -290,50 +274,72 @@ class _HomePageState extends State<HomePage> {
                           if (state is ExpenseLoading) ...[
                             const Center(child: CircularProgressIndicator()),
                             const SizedBox(height: 20),
-                          ]
-                          else if (state is ExpensesLoaded) ...[
+                          ] else if (state is ExpenseLoaded) ...[
                             // Expense Summary
-                            if (state.expenses.isNotEmpty) ...[
-                              Text('Today Total Expense', style: heading3),
-                              const SizedBox(height: 16),
-                              PieChart(
-                                dataMap: const {
-                                  'Expenses': 0,
-                                  'Remaining': 0,
-                                },
-                                animationDuration: const Duration(
-                                  milliseconds: 800,
+                            if (state
+                                .expenseSummary
+                                .expenseByCategory
+                                .isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.only(top: 15),
+                                decoration: BoxDecoration(
+                                  color: cardColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                                 ),
-                                chartLegendSpacing: 40,
-                                chartRadius:
-                                    MediaQuery.of(context).size.width / 3.2,
-                                colorList: const [errorColor, successColor],
-                                initialAngleInDegree: 30,
-                                chartType: ChartType.ring,
-                                ringStrokeWidth: 25,
-                                centerText:
-                                    '',
-                                // centerText:
-                                //     '\$${state.totalExpense.toStringAsFixed(2)}',
-                                legendOptions: LegendOptions(
-                                  showLegendsInRow: false,
-                                  legendPosition: LegendPosition.right,
-                                  showLegends: true,
-                                  legendTextStyle: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                chartValuesOptions: ChartValuesOptions(
-                                  showChartValues: true,
-                                  showChartValuesInPercentage: true,
-                                  showChartValuesOutside: true,
-                                  showChartValueBackground: true,
-                                  chartValueBackgroundColor: Colors.transparent
-                                      .withOpacity(0.1),
+                                child: Column(
+                                  children: [
+                                    Text('Top Five Expenses', style: heading3),
+                                    const SizedBox(height: 16),
+                                    ExpenseBarChart(
+                                      categoryCase: 'expense',
+                                      categoryTotals: state
+                                          .expenseSummary
+                                          .expenseByCategory,
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 32),
-                            ],
+
+                            const SizedBox(height: 16),
+
+                            if (state
+                                .expenseSummary
+                                .incomeByCategory
+                                .isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.only(top: 15),
+                                decoration: BoxDecoration(
+                                  color: cardColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text('Top Five Incomes', style: heading3),
+                                    const SizedBox(height: 16),
+                                    ExpenseBarChart(
+                                      categoryCase: 'income',
+                                      categoryTotals:
+                                          state.expenseSummary.incomeByCategory,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                            const SizedBox(height: 16),
 
                             // Recent Transactions
                             Row(
@@ -360,7 +366,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 32),
                             if (state.expenses.isEmpty)
                               const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 32.0),
@@ -386,8 +392,8 @@ class _HomePageState extends State<HomePage> {
                                     child: ListTile(
                                       leading: CircleAvatar(
                                         backgroundColor: isExpense
-                                            ? errorColor.withOpacity(0.2)
-                                            : successColor.withOpacity(0.2),
+                                            ? errorColor.withValues(alpha: 0.2)
+                                            : successColor.withValues(alpha: 0.2),
                                         child: Icon(
                                           isExpense
                                               ? Icons.arrow_upward
@@ -401,12 +407,14 @@ class _HomePageState extends State<HomePage> {
                                         expense.category,
                                         style: heading3.copyWith(fontSize: 16),
                                       ),
-                                      subtitle: (expense.date != null) ? Text(
-                                        DateFormat(
-                                          'MMM dd, yyyy',
-                                        ).format(expense.date!),
-                                        style: bodySmall,
-                                      ) : const SizedBox.shrink(),
+                                      subtitle: (expense.date != null)
+                                          ? Text(
+                                              DateFormat(
+                                                'MMM dd, yyyy',
+                                              ).format(expense.date!),
+                                              style: bodySmall,
+                                            )
+                                          : const SizedBox.shrink(),
                                       trailing: Text(
                                         '${isExpense ? '-' : '+'} \$${expense.amount.abs().toStringAsFixed(2)}',
                                         style: GoogleFonts.poppins(
@@ -447,9 +455,9 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton(
-                                    onPressed: () => context
-                                        .read<ExpenseBloc>()
-                                        .add(const LoadExpensesEvent()),
+                                    onPressed: () => expenseBloc.add(
+                                      const LoadExpensesEvent(),
+                                    ),
                                     child: const Text('Retry'),
                                   ),
                                 ],
@@ -539,7 +547,7 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -774,56 +782,5 @@ class _HomePageState extends State<HomePage> {
         sumOfCashIncome = total.toString();
       });
     }
-  }
-
-  // void getCurrentBalance() async {
-  //   int month = DateTime.now().month;
-  //   int year = DateTime.now().year;
-  //   String sd = DateFormat("yyyy-MM-dd").format(DateTime(year, month, 1));
-  //   String ed = DateFormat(
-  //     "yyyy-MM-dd",
-  //   ).format(DateTime(year, month + 1, 1).subtract(const Duration(days: 1)));
-  //   var list = await dbHelper.retrieveListOfPassBookEntry(db);
-  //   var cB = await dbHelper.retrieveMonthlyBalance(db, sd, ed, "credit");
-  //   var dB = await dbHelper.retrieveMonthlyBalance(db, sd, ed, "debit");
-  //   setState(() {
-  //     listOfRecentTransaction = list;
-  //     cBalance = cB;
-  //     dBalance = dB;
-  //   });
-  // }
-
-  Future<void> _showMyDialog() async {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          elevation: 10,
-          title: Text("Insufficient Balance", style: heading2),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  "you have Insufficient Balance! Please SetUp Initial Account",
-                  style: bodyMedium,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            Container(
-              height: 30,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text("OK"),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 }

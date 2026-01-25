@@ -22,7 +22,7 @@ dependencies:
 
   #date time format
   intl: ^0.18.1
-  syncfusion_flutter_charts: ^23.1.43
+  syncfusion_flutter_charts: ^32.1.24
   pie_chart: ^5.4.0
   shared_preferences: ^2.2.2
   line_icons: ^2.0.3
@@ -39,7 +39,6 @@ dependencies:
   connectivity_plus: ^5.0.2
   uuid: ^4.5.2
   fpdart: ^1.1.1
-  # carousel_slider: ^4.0.0
 
 
 
