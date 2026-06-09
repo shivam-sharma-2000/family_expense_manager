@@ -1,27 +1,19 @@
-import '../../domain/entities/expense_entity.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../domain/entities/expense.dart';
 
-class ExpenseModel extends ExpenseEntity {
+class ExpenseModel extends Expense {
   const ExpenseModel({
-    required String id,
-    required String title,
-    required double amount,
-    required DateTime? date,
-    required String category,
-    required String? userId,
-    String? description,
-    String? receiptImagePath,
-    String? familyId,
-  }) : super(
-          id: id,
-          title: title,
-          amount: amount,
-          date: date,
-          category: category,
-          description: description,
-          receiptImagePath: receiptImagePath,
-    familyId: familyId,
-    userId: userId,
-        );
+    required super.id,
+    required super.title,
+    required super.amount,
+    required super.date,
+    required super.category,
+    required super.userId,
+    super.description,
+    super.receiptImagePath,
+    super.familyId,
+    required super.paymentMethod,
+  });
 
   // Convert a ExpenseModel into a Map
   Map<String, dynamic> toMap() {
@@ -29,12 +21,13 @@ class ExpenseModel extends ExpenseEntity {
       'id': id,
       'title': title,
       'amount': amount,
-      'date': date?.millisecondsSinceEpoch,
+      'date': date?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
       'category': category,
       'description': description,
       'receipt_image_path': receiptImagePath ?? '',
       'user_id' : userId,
       'family_id' : familyId ?? '',
+      'payment_method' : paymentMethod,
     };
   }
 
@@ -44,17 +37,25 @@ class ExpenseModel extends ExpenseEntity {
       id: map['id'] ?? '',
       title: map['title'] ?? '',
       amount: double.tryParse(map['amount']?.toString() ?? '0.0') ?? 0.0,
-      date: map['date'] != null ? DateTime.fromMillisecondsSinceEpoch(map['date']) : null,
+      date: _parseDate(map['date']),
       category: map['category'] ?? '',
       description: map['description'],
       receiptImagePath: map['receipt_image_path'],
       familyId: map['family_id'],
       userId: map['user_id'],
+      paymentMethod: map['payment_method'] ?? '',
     );
   }
 
+  static DateTime? _parseDate(dynamic dateVal) {
+    if (dateVal == null) return null;
+    if (dateVal is Timestamp) return dateVal.toDate();
+    if (dateVal is int) return DateTime.fromMillisecondsSinceEpoch(dateVal);
+    if (dateVal is String) return DateTime.tryParse(dateVal);
+    return null;
+  }
 
-  factory ExpenseModel.fromEntity(ExpenseEntity expense) {
+  factory ExpenseModel.fromEntity(Expense expense) {
     return ExpenseModel(
       id: expense.id,
       title: expense.title,
@@ -65,12 +66,13 @@ class ExpenseModel extends ExpenseEntity {
       receiptImagePath: expense.receiptImagePath,
       familyId: expense.familyId,
       userId: expense.userId,
+      paymentMethod: expense.paymentMethod,
     );
   }
 
   // Convert a Expense ExpenseModel into a entity
-  ExpenseEntity toEntity() {
-    return ExpenseEntity(
+  Expense toEntity() {
+    return Expense(
       id: id,
       title: title,
       amount: amount,
@@ -80,6 +82,7 @@ class ExpenseModel extends ExpenseEntity {
       receiptImagePath: receiptImagePath,
       familyId: familyId,
       userId: userId,
+      paymentMethod: paymentMethod,
     );
   }
 }

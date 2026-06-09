@@ -14,6 +14,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   UserBloc({required this.userRepository}) : super(UserInitial()) {
     on<LoadUserEvent>(_onLoadUser);
     on<UpdateUserProfileEvent>(_onUpdateUserProfile);
+    on<UserProfileUpdatedEvent>((event, emit) => emit(UserLoaded(event.user)));
   }
 
   Future<void> _onLoadUser(
@@ -60,6 +61,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         userId: event.userId,
         name: event.name,
         photoUrl: event.photoUrl,
+        familyId: event.familyId,
       );
       // The stream will automatically update the state
     } catch (e) {

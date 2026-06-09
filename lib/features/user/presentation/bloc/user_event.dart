@@ -22,15 +22,17 @@ class UpdateUserProfileEvent extends UserEvent {
   final String userId;
   final String? name;
   final String? photoUrl;
+  final String? familyId;
 
   const UpdateUserProfileEvent({
     required this.userId,
     this.name,
     this.photoUrl,
+    this.familyId,
   });
 
   @override
-  List<Object?> get props => [userId, name, photoUrl];
+  List<Object?> get props => [userId, name, photoUrl, familyId];
 }
 
 class UserErrorEvent extends UserEvent {

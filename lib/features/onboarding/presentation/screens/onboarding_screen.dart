@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../core/di/injection_container.dart';
-import '../../core/service/i_local_storage_service.dart';
-import '../routes/my_app_router_const.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/service/i_local_storage_service.dart';
+import '../../../../app/routes/my_app_router_const.dart';
 
-class OnboardingPage extends StatefulWidget {
-  const OnboardingPage({Key? key}) : super(key: key);
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({Key? key}) : super(key: key);
 
   @override
-  _OnboardingPageState createState() => _OnboardingPageState();
+  _OnboardingScreenState createState() => _OnboardingScreenState();
 }
 
-class _OnboardingPageState extends State<OnboardingPage> {
+class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final int _totalPages = 3;

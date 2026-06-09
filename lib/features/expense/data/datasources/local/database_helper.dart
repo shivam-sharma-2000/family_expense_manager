@@ -3,10 +3,11 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
   static const String _databaseName = 'expense_manager.db';
-  static const int _databaseVersion = 2; // Incremented version for schema changes
+  static const int _databaseVersion = 5; // Incremented version for schema changes
   
   // Table name
   static const String tableExpenses = 'expenses';
+  static const String tableUsers = 'users';
   
   // Expense Table Columns
   static const String columnId = 'id';
@@ -18,8 +19,18 @@ class DatabaseHelper {
   static const String columnReceiptImagePath = 'receipt_image_path';
   static const String columnUserId = 'user_id';
   static const String columnFamilyId = 'family_id';
+  static const String columnPaymentMethod = 'payment_method';
   static const String columnIsSynced = 'is_synced';
   static const String columnIsDeleted = 'is_deleted';
+
+  // User Table Columns
+  static const String columnUserTableId = 'id';
+  static const String columnUserName = 'name';
+  static const String columnUserEmail = 'email';
+  static const String columnUserPhotoUrl = 'photoUrl';
+  static const String columnUserFamilyId = 'familyId';
+  static const String columnUserCreatedAt = 'createdAt';
+  static const String columnUserUpdatedAt = 'updatedAt';
   
   // Make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -61,16 +72,28 @@ class DatabaseHelper {
         $columnReceiptImagePath TEXT,
         $columnUserId TEXT NOT NULL,
         $columnFamilyId TEXT NOT NULL,
+        $columnPaymentMethod TEXT,
         $columnIsSynced INTEGER NOT NULL DEFAULT 0,
-        $columnIsDeleted INTEGER NOT NULL DEFAULT 0,
-        FOREIGN KEY ($columnUserId) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY ($columnFamilyId) REFERENCES families(id) ON DELETE CASCADE
+        $columnIsDeleted INTEGER NOT NULL DEFAULT 0
       )
     ''');
     
     // Create indexes for better query performance
     await db.execute('CREATE INDEX idx_expense_user ON $tableExpenses($columnUserId)');
     await db.execute('CREATE INDEX idx_expense_family ON $tableExpenses($columnFamilyId)');
+    
+    // Create users table
+    await db.execute('''
+      CREATE TABLE $tableUsers (
+        $columnUserTableId TEXT PRIMARY KEY,
+        $columnUserName TEXT NOT NULL,
+        $columnUserEmail TEXT NOT NULL,
+        $columnUserPhotoUrl TEXT,
+        $columnUserFamilyId TEXT,
+        $columnUserCreatedAt TEXT,
+        $columnUserUpdatedAt TEXT
+      )
+    ''');
   }
   
   // Handle database upgrades
@@ -96,6 +119,27 @@ class DatabaseHelper {
       await db.execute('''
         ALTER TABLE $tableExpenses 
         ADD COLUMN $columnFamilyId TEXT NOT NULL DEFAULT 'default_family_id'
+      ''');
+    }
+    
+    if (oldVersion < 4) {
+      // Version 4: Drop and recreate table to clear foreign keys, missing columns and old schema issues
+      await db.execute('DROP TABLE IF EXISTS $tableExpenses');
+      await _onCreate(db, newVersion);
+    }
+    
+    if (oldVersion < 5) {
+      // Create users table
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $tableUsers (
+          $columnUserTableId TEXT PRIMARY KEY,
+          $columnUserName TEXT NOT NULL,
+          $columnUserEmail TEXT NOT NULL,
+          $columnUserPhotoUrl TEXT,
+          $columnUserFamilyId TEXT,
+          $columnUserCreatedAt TEXT,
+          $columnUserUpdatedAt TEXT
+        )
       ''');
     }
   }
@@ -135,6 +179,40 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getAllExpensesForSync() async {
     final db = await database;
     return await db.query(tableExpenses);
+  }
+
+  // --- USER TABLE METHODS ---
+
+  Future<void> saveUserLocally(Map<String, dynamic> userMap) async {
+    final db = await database;
+    await db.insert(
+      tableUsers,
+      userMap,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<Map<String, dynamic>?> getUserLocally(String userId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableUsers,
+      where: '$columnUserTableId = ?',
+      whereArgs: [userId],
+    );
+    if (maps.isNotEmpty) {
+      return maps.first;
+    }
+    return null;
+  }
+
+  Future<void> updateUserLocally(String userId, Map<String, dynamic> data) async {
+    final db = await database;
+    await db.update(
+      tableUsers,
+      data,
+      where: '$columnUserTableId = ?',
+      whereArgs: [userId],
+    );
   }
   
   // Close the database connection

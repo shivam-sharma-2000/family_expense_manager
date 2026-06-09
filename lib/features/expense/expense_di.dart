@@ -5,6 +5,7 @@ import 'package:expense_manager/features/expense/data/repositories/expense_repos
 import 'package:expense_manager/features/expense/domain/repositories/expense_repository.dart';
 import 'package:expense_manager/features/expense/domain/usecases/add_expense.dart';
 import 'package:expense_manager/features/expense/domain/usecases/load_expense.dart';
+import 'package:expense_manager/features/expense/domain/usecases/sync_expense.dart';
 import 'package:expense_manager/features/expense/presentation/bloc/expense_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'data/datasources/remote/expense_remote_data_source_impl.dart';
@@ -31,12 +32,16 @@ void registerExpenseModule(GetIt sl) {
   sl.registerLazySingleton<AddExpense>(
     () => AddExpense(repository: sl<ExpenseRepository>()),
   );
+  sl.registerLazySingleton<SyncExpense>(
+    () => SyncExpense(repository: sl<ExpenseRepository>()),
+  );
 
   // Presentation layer
   sl.registerLazySingleton<ExpenseBloc>(
     () => ExpenseBloc(
       loadExpense: sl<LoadExpense>(),
       addExpense: sl<AddExpense>(),
+      syncExpense: sl<SyncExpense>(),
     ),
   );
 }

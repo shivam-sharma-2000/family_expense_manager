@@ -4,7 +4,7 @@ import 'package:expense_manager/features/expense/domain/repositories/expense_rep
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/errors/custom_exceptions.dart';
 import '../../../../core/errors/failure/failure.dart';
-import '../entities/expense_entity.dart';
+import '../entities/expense.dart';
 
 /// Use-case: “Get me a page of requests matching these filters.”
 final class LoadExpense {
@@ -12,9 +12,9 @@ final class LoadExpense {
 
   const LoadExpense({required this.repository});
 
-  Future<Either<Failure, List<ExpenseEntity>>> call() async {
+  Future<Either<Failure, List<Expense>>> call({String? userId, String? familyId, List<String>? userIds}) async {
     try {
-      final res = await repository.getExpenses();
+      final res = await repository.getExpenses(userId: userId, familyId: familyId, userIds: userIds);
       return Right(res);
     } on NetworkException {
       return const Left(NetworkFailure());
@@ -23,11 +23,7 @@ final class LoadExpense {
     } on ServerException {
       return const Left(ServerFailure());
     } catch (error, stackTrace) {
-      log(
-        'LoadExpense unexpected error',
-        error: error,
-        stackTrace: stackTrace,
-      );
+      log('LoadExpense unexpected error', error: error, stackTrace: stackTrace);
       return const Left(UnexpectedFailure());
     }
   }

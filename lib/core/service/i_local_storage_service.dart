@@ -19,6 +19,15 @@ abstract interface class ILocalStorageService {
 
   Future<void> setOnBoardingComplete(bool isComplete);
 
+  // -------------------- 🎨 Theme --------------------
+
+  /// Saves the current theme mode (e.g., 'light', 'dark', 'system').
+  Future<void> setThemeMode(String themeMode);
+
+  /// Retrieves the current theme mode.
+  Future<String?> get themeMode;
+
+
   // -------------------- 🙍‍♂️ User Identity --------------------
 
   /// Saves the logged-in user's display name.

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:expense_manager/features/expense/domain/entities/expense_summary.dart';
-import '../../domain/entities/expense_entity.dart';
+import '../../domain/entities/expense.dart';
 
 abstract class ExpenseState extends Equatable {
   const ExpenseState();
@@ -28,7 +28,7 @@ class ExpenseError extends ExpenseState {
 }
 
 class ExpenseLoaded extends ExpenseState {
-  final List<ExpenseEntity> expenses;
+  final List<Expense> expenses;
   final ExpenseSummary expenseSummary;
 
   const ExpenseLoaded({

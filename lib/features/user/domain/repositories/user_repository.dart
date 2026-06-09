@@ -18,8 +18,12 @@ abstract class UserRepository {
     required String userId,
     String? name,
     String? photoUrl,
+    String? familyId,
   });
   
   // Stream of user data changes
   Stream<UserEntity?> userDataChanges(String userId);
+
+  // Get users by family ID
+  Future<List<UserEntity>> getUsersByFamilyId(String familyId);
 }

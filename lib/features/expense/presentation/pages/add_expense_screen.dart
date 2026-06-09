@@ -1,5 +1,4 @@
 import 'package:expense_manager/features/expense/domain/entities/expense_category_entity.dart';
-import 'package:expense_manager/features/expense/domain/entities/expense_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -7,22 +6,24 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/expense_categories.dart';
+import '../../../../core/constants/payment_categories.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/service/i_local_storage_service.dart';
+import '../../domain/entities/expense.dart';
 import '../bloc/expense_bloc.dart';
 import '../bloc/expense_event.dart';
 import '../bloc/expense_state.dart';
 
-class AddExpensePage extends StatefulWidget {
+class AddExpenseScreen extends StatefulWidget {
   final String from;
 
-  const AddExpensePage({Key? key, required this.from}) : super(key: key);
+  const AddExpenseScreen({Key? key, required this.from}) : super(key: key);
 
   @override
-  _AddExpensePageState createState() => _AddExpensePageState();
+  _AddExpenseScreenState createState() => _AddExpenseScreenState();
 }
 
-class _AddExpensePageState extends State<AddExpensePage> {
+class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -282,7 +283,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                   children: [
                     _sectionTitle('Payment Method'),
                     _gap(),
-                    _buildPaymentMethods(),
+                    _buildPaymentCategoryGrid(),
                     _gap(),
                   ],
                 ),
@@ -380,39 +381,69 @@ class _AddExpensePageState extends State<AddExpensePage> {
     );
   }
 
-  Widget _buildPaymentMethods() {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: _paymentMethods.map((method) {
-        final isSelected = _selectedPaymentMethod == method['name'];
+  Widget _buildPaymentCategoryGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: paymentCategories.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+      ),
+      itemBuilder: (context, index) {
+        final method = paymentCategories[index];
+        final isSelected = _selectedPaymentMethod == method.name;
 
-        return AnimatedContainer(
+        return AnimatedScale(
           duration: const Duration(milliseconds: 200),
-          child: ChoiceChip(
-            showCheckmark: false,
-            avatar: Icon(
-              method['icon'],
-              size: 18,
-              color: isSelected ? Colors.white : Colors.black54,
-            ),
-            label: Text(method['name']),
-            selected: isSelected,
-            selectedColor: const Color(0xFF6C63FF),
-            backgroundColor: Colors.white,
-            onSelected: (_) {
+          scale: isSelected ? 1.05 : 1,
+          child: GestureDetector(
+            onTap: () {
               setState(() {
-                _selectedPaymentMethod = method['name'];
+                _selectedPaymentMethod = method.name;
               });
             },
-            labelStyle: GoogleFonts.poppins(
-              color: isSelected ? Colors.white : Colors.black,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              decoration: BoxDecoration(
+                color: isSelected ? method.color : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    method.icon,
+                    size: 22,
+                    color: isSelected ? Colors.white : method.color,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    method.name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected ? Colors.white : Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
         );
-      }).toList(),
+      },
     );
   }
+
 
   Widget _submitButton(String from) {
     return BlocBuilder<ExpenseBloc, ExpenseState>(
@@ -528,7 +559,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
   Future<void> _submitForm(String from) async {
     if (!_formKey.currentState!.validate()) return;
 
-    final expense = ExpenseEntity(
+    final expense = Expense(
       id: _uuid.v4(),
       title: _descriptionController.text.isNotEmpty
           ? _descriptionController.text
@@ -542,6 +573,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
       receiptImagePath: null,
       userId: await sl<ILocalStorageService>().userId ?? '',
       familyId: await sl<ILocalStorageService>().familyId ?? '',
+      paymentMethod: _selectedPaymentMethod,
     );
 
     context.read<ExpenseBloc>().add(AddExpenseEvent(expense: expense));

@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:expense_manager/model/user_model.dart';
 
 import '../../enums/user_role.dart';
 import '../auth_service.dart';
@@ -51,7 +50,8 @@ final class AuthServiceImpl implements AuthService {
   Future<void> initializeGoogleSignIn() async {
     // Initialize and listen to authentication events
     await _googleSignIn.initialize(
-        serverClientId: "50014509455-386katmd4i1l26u1dll42a6pr70m27i8.apps.googleusercontent.com"
+      serverClientId:
+          "50014509455-386katmd4i1l26u1dll42a6pr70m27i8.apps.googleusercontent.com",
     );
 
     _googleSignIn.authenticationEvents.listen((event) {
@@ -72,29 +72,42 @@ final class AuthServiceImpl implements AuthService {
         );
         final idToken = _googleUser?.authentication.idToken;
         final authorizationClient = _googleUser?.authorizationClient;
-        GoogleSignInClientAuthorization? authorization =  await authorizationClient!.authorizationForScopes(['email', 'profile']);
-        final accessToken =  authorization?.accessToken;
-        if(accessToken == null){
-          final authorization2 = await authorizationClient.authorizationForScopes(['email', 'profile']);
-          if(authorization2?.accessToken == null){
-            throw FirebaseAuthException(code: "error", message: "something went worng");
+        GoogleSignInClientAuthorization? authorization =
+            await authorizationClient!.authorizationForScopes([
+              'email',
+              'profile',
+            ]);
+        final accessToken = authorization?.accessToken;
+        if (accessToken == null) {
+          final authorization2 = await authorizationClient
+              .authorizationForScopes(['email', 'profile']);
+          if (authorization2?.accessToken == null) {
+            throw FirebaseAuthException(
+              code: "error",
+              message: "something went wrong",
+            );
           }
           authorization = authorization2;
         }
-        final credential = GoogleAuthProvider.credential(idToken: idToken, accessToken: accessToken);
-        UserCredential userCredential = await _auth.signInWithCredential(credential);
+        final credential = GoogleAuthProvider.credential(
+          idToken: idToken,
+          accessToken: accessToken,
+        );
+        UserCredential userCredential = await _auth.signInWithCredential(
+          credential,
+        );
         _user = userCredential.user;
         _authStateNotifier.value = UserRole.authenticated;
         _localStorageService.setUserRole(UserRole.authenticated);
-        if(_user != null){
+        if (_user != null) {
           _localStorageService.setUserId(_user!.uid);
+          _localStorageService.setUserName(_user!.displayName ?? '');
         }
       } else {
         // Handle web platform differently
         print('This platform requires platform-specific sign-in UI');
       }
       return _user;
-
     } catch (e) {
       print("Error signing in with Google: $e");
       return null;
@@ -114,8 +127,9 @@ final class AuthServiceImpl implements AuthService {
       );
       _user = credentials.user;
       _localStorageService.setUserRole(UserRole.authenticated);
-      if(_user != null){
+      if (_user != null) {
         _localStorageService.setUserId(_user!.uid);
+        _localStorageService.setUserName(_user!.displayName ?? '');
       }
       return _user;
     } on FirebaseAuthException catch (e) {
@@ -146,12 +160,12 @@ final class AuthServiceImpl implements AuthService {
       }
 
       _localStorageService.setUserRole(UserRole.authenticated);
-      if(credential.user != null){
+      if (credential.user != null) {
         _localStorageService.setUserId(credential.user!.uid);
+        _localStorageService.setUserName(credential.user!.displayName ?? '');
       }
       return credential.user;
-    } on FirebaseAuthException catch (e) {
-      print('Registration Error: ${e.message}');
+    } catch (e) {
       return null;
     }
   }
@@ -159,5 +173,12 @@ final class AuthServiceImpl implements AuthService {
   @override
   Future<void> signOut() async {
     await _auth.signOut();
+    await _googleSignIn.signOut();
+    _user = null;
+    _googleUser = null;
+    _authStateNotifier.value = UserRole.unauthenticated;
+    await _localStorageService.setUserRole(UserRole.unauthenticated);
+    await _localStorageService.setUserId('');
+    await _localStorageService.setUserName('');
   }
 }

@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'package:expense_manager/features/expense/domain/entities/expense_entity.dart';
 import 'package:expense_manager/features/expense/domain/repositories/expense_repository.dart';
 import 'package:expense_manager/features/expense/data/models/expense_model.dart';
 import 'package:expense_manager/features/expense/data/datasources/local/database_helper.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:sqflite/sqflite.dart';
-
+import 'package:sqflite/sqflite.dart' as sqflite;
+import '../../domain/entities/expense.dart';
 import '../datasources/remote/expense_remote_data_source.dart';
 
 class ExpenseRepositoryImpl implements ExpenseRepository {
@@ -13,46 +12,55 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   final ExpenseRemoteDataSource remote;
   String? _lastUserId;
   String? _lastFamilyId;
-  final StreamController<List<ExpenseEntity>> _expensesController =
-      StreamController<List<ExpenseEntity>>.broadcast();
+  final StreamController<List<Expense>> _expensesController =
+      StreamController<List<Expense>>.broadcast();
 
   ExpenseRepositoryImpl({required this.databaseHelper, required this.remote});
 
   @override
-  Future<String> addExpense(ExpenseEntity expense) async {
-    return remote.addExpense(ExpenseModel.fromEntity(expense));
+  Future<String> addExpense(Expense expense) async {
+    final db = await databaseHelper.database;
+    final expenseModel = ExpenseModel.fromEntity(expense);
+    final map = expenseModel.toMap();
+
+    // 1. Save locally FIRST so the UI updates instantly
+    map[DatabaseHelper.columnIsSynced] = 0; // Not synced initially
+    
+    await db.insert(
+      DatabaseHelper.tableExpenses,
+      map,
+      conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
+    );
+
+    // 2. Fire and forget remote push
+    _pushToRemoteBackground(expenseModel, map[DatabaseHelper.columnId]);
+
+    // 3. Return the locally generated ID instantly
+    return expense.id; 
   }
 
-  // Future<bool> addExpense(ExpenseEntity expense) async {
-  //   try {
-  //     final db = await databaseHelper.database;
-  //     final expenseModel = ExpenseModel.fromEntity(expense);
-  //
-  //     // Ensure the expense has user and family IDs
-  //     if (expense.userId != null && expense.userId!.isEmpty) {
-  //       throw Exception('User ID is required');
-  //     }
-  //
-  //     final id = await db.insert(
-  //       DatabaseHelper.tableExpenses,
-  //       expenseModel.toMap(),
-  //       conflictAlgorithm: ConflictAlgorithm.replace,
-  //     );
-  //
-  //     if (id > 0) {
-  //       _notifyExpensesChanged();
-  //       return true;
-  //     }
-  //     return false;
-  //   } catch (e) {
-  //     // Log the error for debugging
-  //     debugPrint('Error adding expense: $e');
-  //     return false;
-  //   }
-  // }
+  Future<void> _pushToRemoteBackground(ExpenseModel expenseModel, String localId) async {
+    try {
+      final remoteId = await remote.addExpense(expenseModel);
+      
+      // Update local database with remote ID and mark as synced
+      final db = await databaseHelper.database;
+      await db.update(
+        DatabaseHelper.tableExpenses,
+        {
+          DatabaseHelper.columnId: remoteId,
+          DatabaseHelper.columnIsSynced: 1,
+        },
+        where: '${DatabaseHelper.columnId} = ?',
+        whereArgs: [localId],
+      );
+    } catch (e) {
+      debugPrint('Background sync failed for expense $localId: $e');
+    }
+  }
 
   @override
-  Future<void> updateExpense(ExpenseEntity expense) async {
+  Future<void> updateExpense(Expense expense) async {
     final db = await databaseHelper.database;
     final expenseModel = ExpenseModel.fromEntity(expense);
     await db.update(
@@ -76,7 +84,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   }
 
   @override
-  Future<List<ExpenseEntity>> getAllExpenses() async {
+  Future<List<Expense>> getAllExpenses() async {
     final db = await databaseHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       DatabaseHelper.tableExpenses,
@@ -89,26 +97,83 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   }
 
   @override
-  Future<List<ExpenseEntity>> getExpenses({
+  Future<List<Expense>> getExpenses({
     String? userId,
     String? familyId,
+    List<String>? userIds,
   }) async {
-    final res = await remote.getExpenses();
-    final list = res.map((e) => e.toEntity()).toList();
-    return list;
+    // 1. Fetch local data first
+    final localData = await _getExpenses(
+      userId: userId,
+      familyId: familyId,
+      userIds: userIds,
+    );
+
+    // 2. If we have local data, return it immediately for instant UI
+    // and fire remote fetch in the background.
+    if (localData.isNotEmpty) {
+      _fetchRemoteAndCacheBackground(userId, familyId, userIds);
+      return localData;
+    }
+
+    // 3. If local DB is empty (first launch), wait for remote fetch
+    await _fetchRemoteAndCacheBackground(userId, familyId, userIds);
+    return await _getExpenses(
+      userId: userId,
+      familyId: familyId,
+      userIds: userIds,
+    );
+  }
+
+  Future<void> _fetchRemoteAndCacheBackground(
+    String? userId,
+    String? familyId,
+    List<String>? userIds,
+  ) async {
+    try {
+      final res = await remote.getExpenses(
+        userId: userId,
+        familyId: familyId,
+        userIds: userIds,
+      );
+
+      final db = await databaseHelper.database;
+      bool hasChanges = false;
+      for (final model in res) {
+        final map = model.toMap();
+        map[DatabaseHelper.columnIsSynced] = 1; 
+        await db.insert(
+          DatabaseHelper.tableExpenses,
+          map,
+          conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
+        );
+        hasChanges = true;
+      }
+      
+      if (hasChanges) {
+        _notifyExpensesChanged();
+      }
+    } catch (e) {
+      debugPrint('Background fetch error: $e');
+    }
   }
 
   // Helper method to get expenses with optional filters
-  Future<List<ExpenseEntity>> _getExpenses({
+  Future<List<Expense>> _getExpenses({
     String? userId,
     String? familyId,
+    List<String>? userIds,
   }) async {
     final db = await databaseHelper.database;
 
     String where = '${DatabaseHelper.columnIsDeleted} = ?';
     List<dynamic> whereArgs = [0];
 
-    if (userId != null) {
+    if (userIds != null && userIds.isNotEmpty) {
+      where +=
+          ' AND ${DatabaseHelper.columnUserId} IN (${List.filled(userIds.length, '?').join(',')})';
+      whereArgs.addAll(userIds);
+    } else if (userId != null) {
       where += ' AND ${DatabaseHelper.columnUserId} = ?';
       whereArgs.add(userId);
     }
@@ -132,7 +197,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   }
 
   @override
-  Future<List<ExpenseEntity>> getExpensesByCategory(
+  Future<List<Expense>> getExpensesByCategory(
     String category, {
     String? userId,
     String? familyId,
@@ -167,7 +232,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   }
 
   @override
-  Future<List<ExpenseEntity>> getExpensesByDateRange(
+  Future<List<Expense>> getExpensesByDateRange(
     DateTime start,
     DateTime end,
   ) async {
@@ -187,24 +252,41 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
 
   @override
   Future<void> syncWithFirebase() async {
-    // This is a placeholder for Firebase sync functionality
-    // In a real implementation, you would:
-    // 1. Check network connectivity
-    // 2. Get all unsynced expenses from local DB
-    // 3. Push them to Firebase
-    // 4. Update sync status in local DB
-    // 5. Handle any errors and retries
+    try {
+      final db = await databaseHelper.database;
 
-    // For now, we'll just mark all expenses as synced
-    final db = await databaseHelper.database;
-    await db.update(
-      DatabaseHelper.tableExpenses,
-      {'is_synced': 1},
-      where: 'is_synced = ?',
-      whereArgs: [0],
-    );
+      // 1. Get all unsynced expenses
+      final unsynced = await databaseHelper.getUnsyncedExpenses();
+      for (final map in unsynced) {
+        final expenseModel = ExpenseModel.fromMap(map);
+        try {
+          // If ID doesn't exist remotely (we use UUID locally, Firestore uses auto-gen usually)
+          // Actually, our remote returns remoteId. So local might have a temporary ID.
+          // Let's assume addExpense handles it.
+          final remoteId = await remote.addExpense(expenseModel);
 
-    // Notify listeners after sync
+          // Update local with remote ID and mark as synced
+          await db.update(
+            DatabaseHelper.tableExpenses,
+            {
+              DatabaseHelper.columnId: remoteId,
+              DatabaseHelper.columnIsSynced: 1,
+            },
+            where: '${DatabaseHelper.columnId} = ?',
+            whereArgs: [map[DatabaseHelper.columnId]],
+          );
+        } catch (e) {
+          debugPrint(
+            'Failed to sync expense ${map[DatabaseHelper.columnId]}: $e',
+          );
+        }
+      }
+
+      // 2. We can also handle deleted but not synced if necessary,
+      // but for now, we just sync the new ones.
+    } catch (e) {
+      debugPrint('Sync failed: $e');
+    }
     _notifyExpensesChanged();
   }
 

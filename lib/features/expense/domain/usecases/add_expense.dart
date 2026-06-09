@@ -4,7 +4,7 @@ import 'package:expense_manager/features/expense/domain/repositories/expense_rep
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/errors/custom_exceptions.dart';
 import '../../../../core/errors/failure/failure.dart';
-import '../entities/expense_entity.dart';
+import '../entities/expense.dart';
 
 /// Use-case: “Get me a page of requests matching these filters.”
 final class AddExpense {
@@ -12,7 +12,7 @@ final class AddExpense {
 
   const AddExpense({required this.repository});
 
-  Future<Either<Failure, String>> call(ExpenseEntity expense) async {
+  Future<Either<Failure, String>> call(Expense expense) async {
     try {
       final res = await repository.addExpense(expense);
       return Right(res);

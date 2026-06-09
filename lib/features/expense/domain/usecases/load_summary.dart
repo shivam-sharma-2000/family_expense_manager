@@ -1,10 +1,10 @@
-import 'package:expense_manager/features/expense/domain/entities/expense_entity.dart';
+import '../entities/expense.dart';
 import '../entities/expense_summary.dart';
 
 class LoadSummaryUseCase {
   LoadSummaryUseCase();
 
-  Future<ExpenseSummary> call(List<ExpenseEntity> expenses) async {
+  Future<ExpenseSummary> call(List<Expense> expenses) async {
     double totalExpense = 0;
     double totalIncome = 0;
     final Map<String, double> categoryTotals = {};

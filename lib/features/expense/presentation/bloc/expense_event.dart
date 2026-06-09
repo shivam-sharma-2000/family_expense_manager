@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/expense_entity.dart';
+import '../../domain/entities/expense.dart';
 
 abstract class ExpenseEvent extends Equatable {
   const ExpenseEvent();
@@ -9,7 +9,7 @@ abstract class ExpenseEvent extends Equatable {
 }
 
 class AddExpenseEvent extends ExpenseEvent {
-  final ExpenseEntity expense;
+  final Expense expense;
 
   const AddExpenseEvent({required this.expense});
 
@@ -18,7 +18,7 @@ class AddExpenseEvent extends ExpenseEvent {
 }
 
 class UpdateExpenseEvent extends ExpenseEvent {
-  final ExpenseEntity expense;
+  final Expense expense;
 
   const UpdateExpenseEvent(this.expense);
 
@@ -36,12 +36,23 @@ class DeleteExpenseEvent extends ExpenseEvent {
 }
 
 class LoadExpensesEvent extends ExpenseEvent {
-  final String? userId;
-  final String? familyId;
+  final bool isFamilyMode;
+  final String? targetUserId;
+  final List<String>? targetUserIds;
+  final String? familyId; // Deprecated or kept for compatibility
 
-  const LoadExpensesEvent({this.userId, this.familyId});
+  const LoadExpensesEvent({
+    this.isFamilyMode = false,
+    this.targetUserId,
+    this.targetUserIds,
+    this.familyId,
+  });
 
   @override
-  List<Object?> get props => [userId, familyId];
+  List<Object?> get props => [isFamilyMode, targetUserId, targetUserIds, familyId];
+}
+
+class SyncExpenseEvent extends ExpenseEvent {
+  const SyncExpenseEvent();
 }
 

@@ -2,7 +2,13 @@ import 'dart:async';
 import 'package:expense_manager/core/constants/expense_categories.dart';
 import 'package:expense_manager/features/expense/domain/usecases/add_expense.dart';
 import 'package:expense_manager/features/expense/domain/usecases/load_expense.dart';
+import 'package:expense_manager/features/expense/domain/usecases/sync_expense.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fpdart/fpdart.dart' as fpdart;
+import 'package:fpdart/fpdart.dart';
+import '../../../../core/errors/failure/failure.dart';
+import '../../domain/entities/expense.dart';
 import '../../domain/entities/expense_summary.dart';
 import 'expense_event.dart';
 import 'expense_state.dart';
@@ -10,21 +16,33 @@ import 'expense_state.dart';
 class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
   final LoadExpense loadExpense;
   final AddExpense addExpense;
+  final SyncExpense syncExpense;
 
-  ExpenseBloc({required this.loadExpense, required this.addExpense})
+  ExpenseBloc({required this.loadExpense, required this.addExpense, required this.syncExpense})
     : super(const ExpenseInitial()) {
     // Set up event handlers
     on<LoadExpensesEvent>(_onLoadExpenses);
     on<AddExpenseEvent>(_onAddExpense);
     on<UpdateExpenseEvent>(_onUpdateExpense);
     on<DeleteExpenseEvent>(_onDeleteExpense);
+    on<SyncExpenseEvent>(_onSyncExpense);
+  }
+
+  Future<void> _onSyncExpense(
+    SyncExpenseEvent event,
+    Emitter<ExpenseState> emit,
+  ) async {
+    // Fire and forget to prevent blocking other events like LoadExpensesEvent
+    syncExpense.call().catchError((e) {
+      // Ignore background sync errors
+      return const fpdart.Left(NetworkFailure());
+    });
   }
 
   Future<void> _onLoadExpenses(
     LoadExpensesEvent event,
     Emitter<ExpenseState> emit,
   ) async {
-    // final draft = _ExpenseDraft.fromState(state);
     emit(const ExpenseLoading());
     double totalExpense = 0;
     double totalIncome = 0;
@@ -37,7 +55,30 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
       (key, value) => MapEntry(value.name, 0.0),
     );
 
-    final expensesResult = await loadExpense();
+    // Determine how to fetch based on mode
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+    final Either<Failure, List<Expense>> expensesResult;
+
+    if (event.isFamilyMode) {
+      if (event.targetUserId != null) {
+        // Family mode, but filtered to a specific user
+        expensesResult = await loadExpense(
+          userId: event.targetUserId,
+        );
+      } else if (event.targetUserIds != null && event.targetUserIds!.isNotEmpty) {
+        // Family mode, all users using whereIn
+        expensesResult = await loadExpense(userIds: event.targetUserIds);
+      } else if (event.familyId != null && event.familyId!.isNotEmpty) {
+        // Fallback if targetUserIds not provided
+        expensesResult = await loadExpense(familyId: event.familyId);
+      } else {
+        expensesResult = await loadExpense(userId: currentUserId);
+      }
+    } else {
+      // Individual mode
+      expensesResult = await loadExpense(userId: currentUserId);
+    }
 
     expensesResult.fold(
       (failure) => emit(ExpenseError(message: failure.title)),
@@ -83,6 +124,8 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
         emit(const ExpenseError(message: 'Please fill in all required fields'));
         return;
       }
+
+      emit(const ExpenseLoading());
 
       final res = await addExpense(event.expense);
       res.fold((failure) => emit(ExpenseError(message: failure.title)), (_) {

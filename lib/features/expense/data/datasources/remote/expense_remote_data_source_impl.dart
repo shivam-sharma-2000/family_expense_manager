@@ -9,10 +9,25 @@ class ExpenseRemoteDataSourceImpl implements ExpenseRemoteDataSource {
     : _firebaseFirestore = firebaseFirestore;
 
   @override
-  Future<List<ExpenseModel>> getExpenses() async {
-    final snapshot = await _firebaseFirestore.collection('transactions').get();
+  Future<List<ExpenseModel>> getExpenses({String? userId, String? familyId, List<String>? userIds}) async {
+    Query query = _firebaseFirestore.collection('transactions');
+    
+    if (userIds != null && userIds.isNotEmpty) {
+      // Split userIds into chunks of 30 if necessary, but assume < 30 for family
+      query = query.where('user_id', whereIn: userIds);
+    } else if (familyId != null && familyId.isNotEmpty) {
+      query = query.where('family_id', isEqualTo: familyId);
+    } else if (userId != null && userId.isNotEmpty) {
+      query = query.where('user_id', isEqualTo: userId);
+    } else {
+      return []; // Requires at least one ID
+    }
+
+    final snapshot = await query.get();
     return snapshot.docs.map((doc) {
-      return ExpenseModel.fromMap(doc.data());
+      final data = doc.data() as Map<String, dynamic>;
+      data['id'] = doc.id; // Inject document ID
+      return ExpenseModel.fromMap(data);
     }).toList();
   }
 
