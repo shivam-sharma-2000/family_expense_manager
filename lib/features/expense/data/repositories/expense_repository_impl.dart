@@ -41,14 +41,13 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
 
   Future<void> _pushToRemoteBackground(ExpenseModel expenseModel, String localId) async {
     try {
-      final remoteId = await remote.addExpense(expenseModel);
+      await remote.setExpense(expenseModel);
       
       // Update local database with remote ID and mark as synced
       final db = await databaseHelper.database;
       await db.update(
         DatabaseHelper.tableExpenses,
         {
-          DatabaseHelper.columnId: remoteId,
           DatabaseHelper.columnIsSynced: 1,
         },
         where: '${DatabaseHelper.columnId} = ?',
@@ -63,24 +62,66 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   Future<void> updateExpense(Expense expense) async {
     final db = await databaseHelper.database;
     final expenseModel = ExpenseModel.fromEntity(expense);
+    final map = expenseModel.toMap();
+    map[DatabaseHelper.columnIsSynced] = 0;
+
     await db.update(
       DatabaseHelper.tableExpenses,
-      expenseModel.toMap(),
+      map,
       where: '${DatabaseHelper.columnId} = ?',
       whereArgs: [expense.id],
     );
     _notifyExpensesChanged();
+
+    _pushUpdateToRemoteBackground(expenseModel, expense.id);
+  }
+
+  Future<void> _pushUpdateToRemoteBackground(ExpenseModel expenseModel, String localId) async {
+    try {
+      await remote.updateExpense(expenseModel);
+      final db = await databaseHelper.database;
+      await db.update(
+        DatabaseHelper.tableExpenses,
+        {DatabaseHelper.columnIsSynced: 1},
+        where: '${DatabaseHelper.columnId} = ?',
+        whereArgs: [localId],
+      );
+    } catch (e) {
+      debugPrint('Background update failed for $localId: $e');
+    }
   }
 
   @override
   Future<void> deleteExpense(String id) async {
     final db = await databaseHelper.database;
-    await db.delete(
+    // Soft delete
+    await db.update(
       DatabaseHelper.tableExpenses,
+      {
+        DatabaseHelper.columnIsDeleted: 1,
+        DatabaseHelper.columnIsSynced: 0,
+      },
       where: '${DatabaseHelper.columnId} = ?',
       whereArgs: [id],
     );
     _notifyExpensesChanged();
+
+    _pushDeleteToRemoteBackground(id);
+  }
+
+  Future<void> _pushDeleteToRemoteBackground(String id) async {
+    try {
+      await remote.deleteExpense(id);
+      final db = await databaseHelper.database;
+      // Hard delete locally once synced
+      await db.delete(
+        DatabaseHelper.tableExpenses,
+        where: '${DatabaseHelper.columnId} = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      debugPrint('Background delete failed for $id: $e');
+    }
   }
 
   @override
@@ -255,35 +296,45 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     try {
       final db = await databaseHelper.database;
 
-      // 1. Get all unsynced expenses
+      // 1. Push all unsynced expenses (new or updated)
       final unsynced = await databaseHelper.getUnsyncedExpenses();
       for (final map in unsynced) {
         final expenseModel = ExpenseModel.fromMap(map);
         try {
-          // If ID doesn't exist remotely (we use UUID locally, Firestore uses auto-gen usually)
-          // Actually, our remote returns remoteId. So local might have a temporary ID.
-          // Let's assume addExpense handles it.
-          final remoteId = await remote.addExpense(expenseModel);
-
-          // Update local with remote ID and mark as synced
+          await remote.setExpense(expenseModel);
+          // Mark as synced locally
           await db.update(
             DatabaseHelper.tableExpenses,
-            {
-              DatabaseHelper.columnId: remoteId,
-              DatabaseHelper.columnIsSynced: 1,
-            },
+            {DatabaseHelper.columnIsSynced: 1},
             where: '${DatabaseHelper.columnId} = ?',
             whereArgs: [map[DatabaseHelper.columnId]],
           );
         } catch (e) {
-          debugPrint(
-            'Failed to sync expense ${map[DatabaseHelper.columnId]}: $e',
-          );
+          debugPrint('Failed to sync push expense ${map[DatabaseHelper.columnId]}: $e');
         }
       }
 
-      // 2. We can also handle deleted but not synced if necessary,
-      // but for now, we just sync the new ones.
+      // 2. Push all soft deletes
+      final deletedNotSynced = await databaseHelper.getDeletedButNotSynced();
+      for (final map in deletedNotSynced) {
+        final id = map[DatabaseHelper.columnId];
+        try {
+          await remote.deleteExpense(id);
+          // Hard delete locally after remote delete succeeds
+          await db.delete(
+            DatabaseHelper.tableExpenses,
+            where: '${DatabaseHelper.columnId} = ?',
+            whereArgs: [id],
+          );
+        } catch (e) {
+          debugPrint('Failed to sync delete expense $id: $e');
+        }
+      }
+
+      // 3. Pull latest from remote
+      // We will pull the global dataset for the user/family if identifiers are set
+      await _fetchRemoteAndCacheBackground(_lastUserId, _lastFamilyId, null);
+
     } catch (e) {
       debugPrint('Sync failed: $e');
     }

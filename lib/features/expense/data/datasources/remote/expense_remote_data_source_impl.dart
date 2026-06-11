@@ -32,11 +32,26 @@ class ExpenseRemoteDataSourceImpl implements ExpenseRemoteDataSource {
   }
 
   @override
-  Future<String> addExpense(ExpenseModel expense) async {
-    final docRef = await _firebaseFirestore
+  Future<void> setExpense(ExpenseModel expense) async {
+    await _firebaseFirestore
         .collection('transactions')
-        .add(expense.toMap());
+        .doc(expense.id)
+        .set(expense.toMap());
+  }
 
-    return docRef.id;
+  @override
+  Future<void> updateExpense(ExpenseModel expense) async {
+    await _firebaseFirestore
+        .collection('transactions')
+        .doc(expense.id)
+        .update(expense.toMap());
+  }
+
+  @override
+  Future<void> deleteExpense(String id) async {
+    await _firebaseFirestore
+        .collection('transactions')
+        .doc(id)
+        .delete();
   }
 }

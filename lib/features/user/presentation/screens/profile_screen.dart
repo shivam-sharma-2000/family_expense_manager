@@ -192,34 +192,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        context.push('/edit_profile', extra: user);
-                      },
-                      icon: Icon(
-                        Icons.logout,
-                        color: context.theme.colorScheme.onPrimary,
-                      ),
-                      label: Text(
-                        'Logout',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          color: context.theme.colorScheme.onError,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.error,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-
                   if (user.familyId == null || user.familyId!.isEmpty) ...[
                     const SizedBox(height: 16),
                     SizedBox(
@@ -253,6 +225,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ],
+
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        context.push('/edit_profile', extra: user);
+                      },
+                      icon: Icon(
+                        Icons.logout,
+                        color: context.theme.colorScheme.onPrimary,
+                      ),
+                      label: Text(
+                        'Logout',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: context.theme.colorScheme.onError,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.error,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        context.push('/sync', extra: user);
+                      },
+                      icon: Icon(
+                        Icons.sync,
+                        color: context.theme.colorScheme.onPrimary,
+                      ),
+                      label: Text(
+                        'Sync Data',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: context.theme.colorScheme.onError,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );

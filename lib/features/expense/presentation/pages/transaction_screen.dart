@@ -1,4 +1,5 @@
 import 'package:expense_manager/core/constants/expense_categories.dart';
+import 'package:expense_manager/core/extensions/theme_extension.dart';
 import 'package:expense_manager/features/expense/domain/entities/expense_category_entity.dart';
 import 'package:expense_manager/features/expense/domain/entities/payment_category.dart';
 import 'package:expense_manager/features/expense/presentation/bloc/expense_bloc.dart';
@@ -23,8 +24,8 @@ class _TransactionScreenState extends State<TransactionScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String searchQuery = '';
-  String selectedCategory = 'All';
-  String selectedPayment = 'All';
+  Set<String> selectedCategories = {};
+  Set<String> selectedPayments = {};
 
   late final expenseBloc = context.read<ExpenseBloc>();
 
@@ -39,39 +40,27 @@ class _TransactionScreenState extends State<TransactionScreen>
   void _tabListener() {
     // Fires multiple times while animating
     if (_tabController.indexIsChanging) return;
-
-    final index = _tabController.index;
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
         title: Text(
           'Transactions',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
-          ),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            color: const Color(0xFF6C63FF).withValues(alpha: 0.1),
-          ),
           indicatorSize: TabBarIndicatorSize.tab,
           dividerColor: Colors.transparent,
           labelColor: const Color(0xFF6C63FF),
-          unselectedLabelColor: Colors.grey,
           labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+          unselectedLabelStyle: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+          ),
           tabs: const [
             Tab(text: 'All'),
             Tab(text: 'Expense'),
@@ -79,114 +68,326 @@ class _TransactionScreenState extends State<TransactionScreen>
           ],
         ),
       ),
-      body: Column(
-        children: [
-          _buildSearch(),
-          _buildFilters(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _transactionList(),
-                _transactionList(type: 'expense'),
-                _transactionList(type: 'income'),
-              ],
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            _buildSearch(),
+            const SizedBox(height: 20),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _transactionList(),
+                  _transactionList(type: 'expense'),
+                  _transactionList(type: 'income'),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSearch() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: TextField(
-        onChanged: (value) {
-          setState(() => searchQuery = value);
-        },
-        decoration: InputDecoration(
-          hintText: 'Search transaction...',
-          prefixIcon: const Icon(Icons.search),
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
-          ),
+    return TextField(
+      onChanged: (value) {
+        setState(() => searchQuery = value);
+      },
+      decoration: InputDecoration(
+        hintText: 'Search transaction...',
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.filter_list),
+          onPressed: _showFilterBottomSheet,
+        ),
+        filled: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
         ),
       ),
     );
   }
 
-  Widget _buildFilters() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _chipRow<ExpenseCategory>(
-            'Category',
-            _tabController.index == 0
-                ? [ "All",
-                    ...ExpenseCategories.income.map((e) => e.name).toList(),
-                    ...ExpenseCategories.spend.map((e) => e.name).toList(),
-                  ]
-                : _tabController.index == 1
-                ? ["All", ...ExpenseCategories.spend.map((e) => e.name).toList()]
-                : ["All", ...ExpenseCategories.income.map((e) => e.name).toList()],
-            selectedCategory,
-            (value) => setState(() => selectedCategory = value),
-          ),
-          const SizedBox(height: 8),
-          _chipRow<PaymentCategory>(
-            'Payment',
-            ["All", ...paymentCategories.map((e) =>e.name).toList()],
-            selectedPayment,
-            (value) => setState(() => selectedPayment = value),
-          ),
-        ],
+  void _showFilterBottomSheet() {
+    // Generate categories based on tab
+    List<String> categories = [];
+    if (_tabController.index == 0) {
+      categories = [
+        ...ExpenseCategories.income.map((e) => e.name),
+        ...ExpenseCategories.spend.map((e) => e.name),
+      ];
+    } else if (_tabController.index == 1) {
+      categories = ExpenseCategories.spend.map((e) => e.name).toList();
+    } else {
+      categories = ExpenseCategories.income.map((e) => e.name).toList();
+    }
+
+    final payments = paymentCategories.map((e) => e.name).toList();
+
+    int selectedSectionIndex = 0;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.theme.colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.85,
+              child: Column(
+                children: [
+                  // Header
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: context.theme.colorScheme.onSurface.withValues(
+                            alpha: .1,
+                          ),
+                        ),
+                      ),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Text(
+                          'Filters',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: context.theme.colorScheme.onSurface,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Positioned(
+                          right: 20,
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Icon(
+                              Icons.close,
+                              color: context.theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Body
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Section (Filter Names)
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.35,
+                          child: ListView(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              _buildFilterSectionTile(
+                                'Category',
+                                0,
+                                selectedSectionIndex,
+                                (index) => setModalState(
+                                  () => selectedSectionIndex = index,
+                                ),
+                              ),
+                              _buildFilterSectionTile(
+                                'Payment',
+                                1,
+                                selectedSectionIndex,
+                                (index) => setModalState(
+                                  () => selectedSectionIndex = index,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Right Section (Filter Values)
+                        Expanded(
+                          child: Container(
+                            color: context.theme.colorScheme.surface,
+                            child: ListView(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              children: selectedSectionIndex == 0
+                                  ? _buildCustomCheckboxList(
+                                      categories,
+                                      selectedCategories,
+                                      setModalState,
+                                    )
+                                  : _buildCustomCheckboxList(
+                                      payments,
+                                      selectedPayments,
+                                      setModalState,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Footer
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        top: BorderSide(color: Colors.grey.shade200),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {}); // trigger main screen update
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              'Apply',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () {
+                            setModalState(() {
+                              selectedCategories.clear();
+                              selectedPayments.clear();
+                            });
+                          },
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget _chipRow<T>(
-    String title,
+  List<Widget> _buildCustomCheckboxList(
     List<String> items,
-    String selected,
-    ValueChanged<String> onSelected,
+    Set<String> selectedItems,
+    StateSetter setModalState,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 6),
-        SizedBox(
-          height: 36,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final isSelected = item == selected;
+    bool? isAllChecked;
+    if (selectedItems.isEmpty) {
+      isAllChecked = false;
+    } else if (selectedItems.length == items.length) {
+      isAllChecked = true;
+    } else {
+      isAllChecked = null;
+    }
 
-              return ChoiceChip(
-                label: Text(item),
-                selected: isSelected,
-                selectedColor: const Color(0xFF6C63FF),
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black,
-                ),
-                onSelected: (_) => onSelected(item),
-              );
-            },
+    final allTile = CheckboxListTile(
+      value: isAllChecked,
+      tristate: true,
+      activeColor: context.theme.colorScheme.onSurface,
+      checkColor: context.theme.colorScheme.surface,
+      checkboxShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+      ),
+      title: const Text('All'),
+      contentPadding: EdgeInsets.zero,
+      controlAffinity: ListTileControlAffinity.leading,
+      onChanged: (checked) {
+        setModalState(() {
+          if (isAllChecked == false) {
+            selectedItems.addAll(items);
+          } else {
+            selectedItems.clear();
+          }
+        });
+      },
+    );
+
+    final itemTiles = items.map((item) {
+      return CheckboxListTile(
+        value: selectedItems.contains(item),
+        activeColor: context.theme.colorScheme.onSurface,
+        checkColor: context.theme.colorScheme.surface,
+        checkboxShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+        ),
+        title: Text(item),
+        contentPadding: EdgeInsets.zero,
+        controlAffinity: ListTileControlAffinity.leading,
+        onChanged: (checked) {
+          setModalState(() {
+            if (checked == true) {
+              selectedItems.add(item);
+            } else {
+              selectedItems.remove(item);
+            }
+          });
+        },
+      );
+    }).toList();
+
+    return [allTile, ...itemTiles];
+  }
+
+  Widget _buildFilterSectionTile(
+    String title,
+    int index,
+    int selectedIndex,
+    ValueChanged<int> onTap,
+  ) {
+    final isSelected = index == selectedIndex;
+    return InkWell(
+      onTap: () => onTap(index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? context.theme.colorScheme.surface
+              : Colors.transparent,
+          border: isSelected ? const Border(left: BorderSide(width: 4)) : null,
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            color: isSelected
+                ? context.theme.colorScheme.onSurface
+                : context.theme.colorScheme.onSurface.withValues(alpha: .8),
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -209,7 +410,6 @@ class _TransactionScreenState extends State<TransactionScreen>
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
             itemCount: filtered.length,
             itemBuilder: (context, index) {
               final tx = filtered[index];
@@ -241,25 +441,19 @@ class _TransactionScreenState extends State<TransactionScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: CircleAvatar(
           backgroundColor: isExpense
-              ? Colors.red.withOpacity(0.15)
-              : Colors.green.withOpacity(0.15),
+              ? context.theme.colorScheme.error.withValues(alpha: .1)
+              : context.theme.colorScheme.secondary.withValues(alpha: .1),
           child: Icon(
             isExpense ? Icons.arrow_upward : Icons.arrow_downward,
-            color: isExpense ? Colors.red : Colors.green,
+            color: isExpense
+                ? context.theme.colorScheme.error
+                : context.theme.colorScheme.secondary,
           ),
         ),
         title: Text(
@@ -274,7 +468,9 @@ class _TransactionScreenState extends State<TransactionScreen>
           '${isExpense ? '-' : '+'} ₹${amount.abs().toStringAsFixed(2)}',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w700,
-            color: isExpense ? Colors.red : Colors.green,
+            color: isExpense
+                ? context.theme.colorScheme.error
+                : context.theme.colorScheme.secondary,
           ),
         ),
       ),
@@ -296,12 +492,14 @@ class _TransactionScreenState extends State<TransactionScreen>
       }
 
       // Category filter
-      if (selectedCategory != 'All' && tx.category != selectedCategory) {
+      if (selectedCategories.isNotEmpty &&
+          !selectedCategories.contains(tx.category)) {
         return false;
       }
 
       // Payment filter
-      if (selectedPayment != 'All' && tx.paymentMethod != selectedPayment) {
+      if (selectedPayments.isNotEmpty &&
+          !selectedPayments.contains(tx.paymentMethod)) {
         return false;
       }
 

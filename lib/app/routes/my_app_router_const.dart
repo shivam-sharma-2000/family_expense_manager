@@ -8,4 +8,5 @@ class MyAppRouteConst {
   static String splash = "/splash";
   static String profile = "/profile";
   static String editProfile = "/edit_profile";
+  static String sync = "/sync";
 }

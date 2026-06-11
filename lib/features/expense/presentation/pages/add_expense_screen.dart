@@ -1,3 +1,4 @@
+import 'package:expense_manager/core/extensions/theme_extension.dart';
 import 'package:expense_manager/features/expense/domain/entities/expense_category_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,74 +35,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   String _selectedCategory = 'Food';
   String _selectedPaymentMethod = 'Cash';
   DateTime _selectedDate = DateTime.now();
-
-  final List<Map<String, dynamic>> _paymentMethods = [
-    {'name': 'Cash', 'icon': Icons.currency_rupee_outlined},
-    {'name': 'Credit Card', 'icon': Icons.credit_card},
-    {'name': 'Debit Card', 'icon': Icons.credit_card},
-    {'name': 'UPI', 'icon': Icons.payment_outlined},
-    {'name': 'Bank Transfer', 'icon': Icons.account_balance},
-    {'name': 'Digital Wallet', 'icon': Icons.account_balance_wallet},
-  ];
-
-  // final List<Map<String, dynamic>> _categories = [
-  //   {
-  //     'name': 'Food',
-  //     'icon': Icons.restaurant,
-  //     'color': const Color(0xFFFF6B6B),
-  //   },
-  //   {
-  //     'name': 'Transport',
-  //     'icon': Icons.directions_car,
-  //     'color': const Color(0xFF4D96FF),
-  //   },
-  //   {
-  //     'name': 'Shopping',
-  //     'icon': Icons.shopping_bag,
-  //     'color': const Color(0xFF6C5CE7),
-  //   },
-  //   {'name': 'Bills', 'icon': Icons.receipt, 'color': const Color(0xFF00B894)},
-  //   {
-  //     'name': 'Entertainment',
-  //     'icon': Icons.movie,
-  //     'color': const Color(0xFFFD79A8),
-  //   },
-  //   {
-  //     'name': 'Health',
-  //     'icon': Icons.health_and_safety,
-  //     'color': const Color(0xFF00CEC9),
-  //   },
-  //   {
-  //     'name': 'Education',
-  //     'icon': Icons.school,
-  //     'color': const Color(0xFF6C5CE7),
-  //   },
-  //   {
-  //     'name': 'Other',
-  //     'icon': Icons.more_horiz,
-  //     'color': const Color(0xFFA4B0BE),
-  //   },
-  // ];
-  //
-  // final List<Map<String, dynamic>> _incomeCategories = [
-  //   {'name': 'Rent', 'icon': Icons.house, 'color': const Color(0xFFFF6B6B)},
-  //   {
-  //     'name': 'Gift',
-  //     'icon': Icons.card_giftcard,
-  //     'color': const Color(0xFF4D96FF),
-  //   },
-  //   {
-  //     'name': 'Cashback',
-  //     'icon': Icons.payments_outlined,
-  //     'color': const Color(0xFF6C5CE7),
-  //   },
-  //   {'name': 'Salary', 'icon': Icons.receipt, 'color': const Color(0xFF00B894)},
-  //   {
-  //     'name': 'Other',
-  //     'icon': Icons.more_horiz,
-  //     'color': const Color(0xFFA4B0BE),
-  //   },
-  // ];
 
   @override
   void initState() {
@@ -177,7 +110,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Widget _buildExpenseUI(BuildContext context, bool isLoading) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Expense', style: GoogleFonts.poppins()),
+        title: const Text('Add Expense'),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
@@ -193,7 +126,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Widget _buildIncomeUI(BuildContext context, bool isLoading) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Income', style: GoogleFonts.poppins()),
+        title: const Text('Add Income'),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
@@ -212,7 +145,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         : ExpenseCategories.income;
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Form(
         key: _formKey,
         child: ListView(
@@ -227,7 +160,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   TextFormField(
                     controller: _amountController,
                     keyboardType: TextInputType.number,
-                    style: GoogleFonts.poppins(fontSize: 18),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
                     decoration: _inputDecoration(
                       icon: Icons.currency_rupee,
                       inputBorder: false,
@@ -444,7 +380,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-
   Widget _submitButton(String from) {
     return BlocBuilder<ExpenseBloc, ExpenseState>(
       builder: (context, state) {
@@ -493,7 +428,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -512,11 +447,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Widget _sectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.poppins(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-        color: Colors.black87,
-      ),
+      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
     );
   }
 

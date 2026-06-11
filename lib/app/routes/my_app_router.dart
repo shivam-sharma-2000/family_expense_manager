@@ -1,6 +1,7 @@
 import 'package:expense_manager/features/expense/presentation/pages/add_expense_screen.dart';
 import 'package:expense_manager/features/auth/presentation/register_screen.dart';
 import 'package:expense_manager/features/splash/presentation/splash_screen.dart';
+import 'package:expense_manager/features/sync/presentation/pages/sync_page.dart';
 import 'package:expense_manager/features/user/domain/entities/user_entity.dart';
 import 'package:expense_manager/features/user/presentation/screens/edit_profile_screen.dart';
 import 'package:expense_manager/features/user/presentation/screens/profile_screen.dart';
@@ -81,6 +82,14 @@ class MyAppRouter {
         pageBuilder: (context, state) {
           final user = state.extra as UserEntity;
           return MaterialPage(child: EditProfileScreen(user: user));
+        },
+      ),
+      GoRoute(
+        name: 'sync',
+        path: MyAppRouteConst.sync,
+        pageBuilder: (context, state) {
+          final user = state.extra as UserEntity;
+          return const MaterialPage(child: SyncPage());
         },
       ),
     ],

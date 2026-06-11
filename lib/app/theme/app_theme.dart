@@ -29,6 +29,13 @@ class AppTheme {
       textTheme: const TextTheme(
         bodyLarge: TextStyle(color: Color(0xFF1E293B)),
         bodyMedium: TextStyle(color: Color(0xFF64748B)),
+        titleMedium: TextStyle(
+          color: Color(0xFF1E293B),
+        ), // Text field input color
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        hintStyle: TextStyle(color: Color(0xFF94A3B8)),
+        labelStyle: TextStyle(color: Color(0xFF64748B)),
       ),
       colorScheme: const ColorScheme.light(
         primary: Color(0xFF6C63FF),
@@ -67,6 +74,11 @@ class AppTheme {
       textTheme: const TextTheme(
         bodyLarge: TextStyle(color: Colors.white),
         bodyMedium: TextStyle(color: Color(0xFFCBD5E1)),
+        titleMedium: TextStyle(color: Colors.white), // Text field input color
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        hintStyle: TextStyle(color: Color(0xFF94A3B8)),
+        labelStyle: TextStyle(color: Color(0xFFCBD5E1)),
       ),
       colorScheme: const ColorScheme.dark(
         primary: Color(0xFF818CF8),
