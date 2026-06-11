@@ -73,7 +73,7 @@ jobs:
 
         with:
 
-          artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa"
+          artifacts: "build/app/outputs/apk/release/*"
 
           tag: v1.0.${{ github.run_number }}
 
