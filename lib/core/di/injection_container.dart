@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_manager/core/service/i_local_storage_service.dart';
 import 'package:expense_manager/core/service/impl/auth_service_impl.dart';
 import 'package:expense_manager/core/service/impl/local_storage_service.dart';
-import 'package:expense_manager/app/theme/bloc/theme_bloc.dart';
 import 'package:expense_manager/features/auth/data/repositories/auth_repositories_impl.dart';
 import 'package:expense_manager/features/auth/domain/repositories/auth_repositories.dart';
 import 'package:expense_manager/features/auth/presentation/bloc/auth_bloc.dart';
@@ -17,6 +16,7 @@ import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../features/expense/data/datasources/local/database_helper.dart';
 import '../../features/expense/expense_di.dart' as expense_di;
+import '../theme/bloc/theme_bloc.dart';
 
 final sl = GetIt.instance;
 

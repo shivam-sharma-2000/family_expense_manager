@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:expense_manager/core/di/injection_container.dart';
 import 'package:expense_manager/features/expense/domain/usecases/sync_expense.dart';
-import 'package:expense_manager/app/routes/my_app_router_const.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons/hugeicons.dart';
+
+import '../../../../core/routes/my_app_router_const.dart';
 
 class SyncPage extends StatefulWidget {
   const SyncPage({super.key});
@@ -11,7 +13,8 @@ class SyncPage extends StatefulWidget {
   State<SyncPage> createState() => _SyncPageState();
 }
 
-class _SyncPageState extends State<SyncPage> with SingleTickerProviderStateMixin {
+class _SyncPageState extends State<SyncPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   bool _hasError = false;
 
@@ -29,9 +32,9 @@ class _SyncPageState extends State<SyncPage> with SingleTickerProviderStateMixin
     try {
       final syncExpense = sl<SyncExpense>();
       final result = await syncExpense.call();
-      
+
       if (!mounted) return;
-      
+
       result.fold(
         (failure) {
           setState(() => _hasError = true);
@@ -48,7 +51,9 @@ class _SyncPageState extends State<SyncPage> with SingleTickerProviderStateMixin
       if (!mounted) return;
       setState(() => _hasError = true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An unexpected error occurred during sync')),
+        const SnackBar(
+          content: Text('An unexpected error occurred during sync'),
+        ),
       );
     }
   }
@@ -67,17 +72,14 @@ class _SyncPageState extends State<SyncPage> with SingleTickerProviderStateMixin
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white70),
+          icon: const HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: Colors.white70),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Syncing',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Syncing', style: TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white70),
+            icon: const HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Colors.white70),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -108,8 +110,11 @@ class _SyncPageState extends State<SyncPage> with SingleTickerProviderStateMixin
                     padding: const EdgeInsets.all(16),
                     child: Image.asset(
                       'assets/icons/expense_logo.png',
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.account_balance_wallet, color: Colors.white, size: 40),
+                      errorBuilder: (context, error, stackTrace) => const HugeIcon(
+                        icon: HugeIcons.strokeRoundedWallet01,
+                        color: Colors.white,
+                        size: 40,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -160,8 +165,11 @@ class _SyncPageState extends State<SyncPage> with SingleTickerProviderStateMixin
                     padding: const EdgeInsets.all(16),
                     child: Image.network(
                       'https://firebase.google.com/downloads/brand-guidelines/PNG/logo-logomark.png',
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.cloud_sync, color: Colors.amber, size: 40),
+                      errorBuilder: (context, error, stackTrace) => const HugeIcon(
+                        icon: HugeIcons.strokeRoundedCloud,
+                        color: Colors.amber,
+                        size: 40,
+                      ),
                     ),
                   ),
                 ],
@@ -183,9 +191,7 @@ class _SyncPageState extends State<SyncPage> with SingleTickerProviderStateMixin
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  TextSpan(
-                    text: 'automatically keeps your data in sync with ',
-                  ),
+                  TextSpan(text: 'automatically keeps your data in sync with '),
                   TextSpan(
                     text: 'Firebase',
                     style: TextStyle(
@@ -194,7 +200,8 @@ class _SyncPageState extends State<SyncPage> with SingleTickerProviderStateMixin
                     ),
                   ),
                   TextSpan(
-                    text: '. By continuing, you are agreeing to Expense Manager\'s ',
+                    text:
+                        '. By continuing, you are agreeing to Expense Manager\'s ',
                   ),
                   TextSpan(
                     text: 'terms and conditions',
@@ -208,17 +215,12 @@ class _SyncPageState extends State<SyncPage> with SingleTickerProviderStateMixin
             const SizedBox(height: 20),
             RichText(
               text: const TextSpan(
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.white54, fontSize: 14),
                 children: [
                   TextSpan(text: 'Need help? please contact '),
                   TextSpan(
                     text: 'support',
-                    style: TextStyle(
-                      color: Color(0xFFFFCB2B),
-                    ),
+                    style: TextStyle(color: Color(0xFFFFCB2B)),
                   ),
                 ],
               ),

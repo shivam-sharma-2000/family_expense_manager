@@ -1,18 +1,15 @@
-import 'package:expense_manager/core/enums/user_role.dart';
-import 'package:expense_manager/core/service/impl/local_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/routes/my_app_router_const.dart';
 import '../../../../core/service/i_local_storage_service.dart';
-import '../../../../app/routes/my_app_router_const.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
 
   @override
-  _OnboardingScreenState createState() => _OnboardingScreenState();
+  State<StatefulWidget> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
@@ -23,17 +20,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<Map<String, String>> _onboardingData = [
     {
       'title': 'Track Your Expenses',
-      'description': 'Easily record and categorize your daily expenses to understand where your money goes.',
+      'description':
+          'Easily record and categorize your daily expenses to understand where your money goes.',
       'image': '💰',
     },
     {
       'title': 'Visualize Your Spending',
-      'description': 'Get insights with beautiful charts and graphs to track your financial habits.',
+      'description':
+          'Get insights with beautiful charts and graphs to track your financial habits.',
       'image': '📊',
     },
     {
       'title': 'Set Budgets & Goals',
-      'description': 'Create budgets and savings goals to achieve your financial objectives.',
+      'description':
+          'Create budgets and savings goals to achieve your financial objectives.',
       'image': '🎯',
     },
   ];
@@ -80,17 +80,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            data['image']!,
-            style: const TextStyle(fontSize: 100),
-          ),
+          Text(data['image']!, style: const TextStyle(fontSize: 100)),
           const SizedBox(height: 40),
           Text(
             data['title']!,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -154,7 +148,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 );
               }
             },
-            child: Text(_currentPage == _totalPages - 1 ? 'Get Started' : 'Next'),
+            child: Text(
+              _currentPage == _totalPages - 1 ? 'Get Started' : 'Next',
+            ),
           ),
         ],
       ),

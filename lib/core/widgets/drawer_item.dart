@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:hugeicons/hugeicons.dart';
 import '../extensions/theme_extension.dart';
 
 class DrawerItem extends StatelessWidget {
-  final IconData icon;
+  final dynamic icon;
   final String title;
   final VoidCallback onTap;
   final int? badgeCount;
@@ -30,7 +31,7 @@ class DrawerItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           child: Row(
             children: [
-              Icon(icon, color: itemColor),
+              HugeIcon(icon: icon, color: itemColor),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(

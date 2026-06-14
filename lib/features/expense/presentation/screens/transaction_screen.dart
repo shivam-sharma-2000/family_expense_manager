@@ -1,17 +1,17 @@
 import 'package:expense_manager/core/constants/expense_categories.dart';
 import 'package:expense_manager/core/extensions/theme_extension.dart';
-import 'package:expense_manager/features/expense/domain/entities/expense_category_entity.dart';
-import 'package:expense_manager/features/expense/domain/entities/payment_category.dart';
 import 'package:expense_manager/features/expense/presentation/bloc/expense_bloc.dart';
 import 'package:expense_manager/features/expense/presentation/bloc/expense_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../../../../core/constants/payment_categories.dart';
 import '../../domain/entities/expense.dart';
 import '../bloc/expense_state.dart';
+import 'transaction_details.dart';
 
 class TransactionScreen extends StatefulWidget {
   const TransactionScreen({super.key});
@@ -98,9 +98,15 @@ class _TransactionScreenState extends State<TransactionScreen>
       },
       decoration: InputDecoration(
         hintText: 'Search transaction...',
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: const HugeIcon(
+          icon: HugeIcons.strokeRoundedSearch01,
+          color: Colors.grey,
+        ),
         suffixIcon: IconButton(
-          icon: const Icon(Icons.filter_list),
+          icon: const HugeIcon(
+            icon: HugeIcons.strokeRoundedFilter,
+            color: Colors.grey,
+          ),
           onPressed: _showFilterBottomSheet,
         ),
         filled: true,
@@ -172,8 +178,8 @@ class _TransactionScreenState extends State<TransactionScreen>
                           right: 20,
                           child: GestureDetector(
                             onTap: () => Navigator.pop(context),
-                            child: Icon(
-                              Icons.close,
+                            child: HugeIcon(
+                              icon: HugeIcons.strokeRoundedCancel01,
                               color: context.theme.colorScheme.onSurface,
                             ),
                           ),
@@ -414,11 +420,14 @@ class _TransactionScreenState extends State<TransactionScreen>
             itemBuilder: (context, index) {
               final tx = filtered[index];
               return _transactionTile(
+                context: context,
+                id: tx.id,
                 title: tx.title,
                 category: tx.category,
                 amount: tx.amount,
                 payment: tx.paymentMethod,
-                date: tx.date!,
+                date: tx.date,
+                receiptImagePath: tx.receiptImagePath,
               );
             },
           );
@@ -430,11 +439,14 @@ class _TransactionScreenState extends State<TransactionScreen>
   }
 
   Widget _transactionTile({
+    required BuildContext context,
+    required String id,
     required String title,
     required String category,
     required double amount,
     required String payment,
-    required DateTime date,
+    required DateTime? date,
+    required String? receiptImagePath,
   }) {
     final isExpense = amount < 0;
 
@@ -445,12 +457,31 @@ class _TransactionScreenState extends State<TransactionScreen>
         borderRadius: BorderRadius.circular(16),
       ),
       child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TransactionDetails(
+                transaction: {
+                  'amount': amount,
+                  'category': category,
+                  'transaction_method': payment,
+                  'entry_id': id,
+                  'date': date?.toIso8601String(),
+                  'receipt_image_path': receiptImagePath,
+                },
+              ),
+            ),
+          );
+        },
         leading: CircleAvatar(
           backgroundColor: isExpense
               ? context.theme.colorScheme.error.withValues(alpha: .1)
               : context.theme.colorScheme.secondary.withValues(alpha: .1),
-          child: Icon(
-            isExpense ? Icons.arrow_upward : Icons.arrow_downward,
+          child: HugeIcon(
+            icon: isExpense
+                ? HugeIcons.strokeRoundedArrowUp01
+                : HugeIcons.strokeRoundedArrowDown01,
             color: isExpense
                 ? context.theme.colorScheme.error
                 : context.theme.colorScheme.secondary,
@@ -461,7 +492,7 @@ class _TransactionScreenState extends State<TransactionScreen>
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
-          '$category • $payment • ${DateFormat('dd MMM yyyy').format(date)}',
+          '$category • $payment${date != null ? ' • ${DateFormat('dd MMM yyyy').format(date)}' : ''}',
           style: GoogleFonts.poppins(fontSize: 12),
         ),
         trailing: Text(

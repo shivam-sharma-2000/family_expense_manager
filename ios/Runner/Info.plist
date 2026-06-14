@@ -60,5 +60,10 @@
         </dict>
     </array>
 
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to the camera to take photos of receipts.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to photos to select receipt images.</string>
+
 </dict>
 </plist>

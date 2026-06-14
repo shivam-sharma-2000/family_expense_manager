@@ -1,10 +1,9 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:expense_manager/core/extensions/theme_extension.dart';
 import 'package:expense_manager/features/user/presentation/bloc/user_bloc.dart';
 import 'package:expense_manager/features/user/presentation/bloc/user_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 class DrawerHeaderSection extends StatelessWidget {
   const DrawerHeaderSection({super.key});
@@ -45,8 +44,8 @@ class DrawerHeaderSection extends StatelessWidget {
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Icon(
-                      Icons.person,
+                    errorBuilder: (_, __, ___) => HugeIcon(
+                      icon: HugeIcons.strokeRoundedUser,
                       size: 28,
                       color: context.theme.colorScheme.primary,
                     ),

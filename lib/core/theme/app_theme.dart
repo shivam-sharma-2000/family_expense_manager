@@ -1,18 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
+
+  static TextTheme _buildTextTheme(Color bodyColor, Color displayColor) {
+    return TextTheme(
+      displayLarge: GoogleFonts.poppins(
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.5,
+        color: displayColor,
+      ),
+      displayMedium: GoogleFonts.poppins(
+        fontSize: 22,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.3,
+        color: displayColor,
+      ),
+      displaySmall: GoogleFonts.poppins(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: displayColor,
+      ),
+      bodyLarge: GoogleFonts.poppins(
+        fontSize: 16,
+        height: 1.5,
+        color: bodyColor,
+      ),
+      bodyMedium: GoogleFonts.poppins(
+        fontSize: 14,
+        height: 1.5,
+        color: bodyColor,
+      ),
+      bodySmall: GoogleFonts.poppins(
+        fontSize: 12,
+        height: 1.5,
+        color: bodyColor,
+      ),
+      labelLarge: GoogleFonts.poppins(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
+        color: Colors.white, // Standard button text color
+      ),
+      titleMedium: GoogleFonts.poppins(
+        color: displayColor, // Text field input color
+      ),
+    );
+  }
+
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
       primarySwatch: Colors.indigo,
       primaryColor: const Color(0xFF6C63FF),
       scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: Color(0xFF1E293B)),
-        titleTextStyle: TextStyle(
-          color: Color(0xFF1E293B),
+        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+        titleTextStyle: GoogleFonts.poppins(
+          color: const Color(0xFF1E293B),
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -26,13 +74,7 @@ class AppTheme {
         elevation: 10,
       ),
       cardColor: Colors.white,
-      textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Color(0xFF1E293B)),
-        bodyMedium: TextStyle(color: Color(0xFF64748B)),
-        titleMedium: TextStyle(
-          color: Color(0xFF1E293B),
-        ), // Text field input color
-      ),
+      textTheme: _buildTextTheme(const Color(0xFF64748B), const Color(0xFF1E293B)),
       inputDecorationTheme: const InputDecorationTheme(
         hintStyle: TextStyle(color: Color(0xFF94A3B8)),
         labelStyle: TextStyle(color: Color(0xFF64748B)),
@@ -52,11 +94,11 @@ class AppTheme {
       primarySwatch: Colors.indigo,
       primaryColor: const Color(0xFF6C63FF),
       scaffoldBackgroundColor: const Color(0xFF0F172A),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: GoogleFonts.poppins(
           color: Colors.white,
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -71,11 +113,7 @@ class AppTheme {
         elevation: 10,
       ),
       cardColor: const Color(0xFF1E293B),
-      textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Colors.white),
-        bodyMedium: TextStyle(color: Color(0xFFCBD5E1)),
-        titleMedium: TextStyle(color: Colors.white), // Text field input color
-      ),
+      textTheme: _buildTextTheme(const Color(0xFFCBD5E1), Colors.white),
       inputDecorationTheme: const InputDecorationTheme(
         hintStyle: TextStyle(color: Color(0xFF94A3B8)),
         labelStyle: TextStyle(color: Color(0xFFCBD5E1)),

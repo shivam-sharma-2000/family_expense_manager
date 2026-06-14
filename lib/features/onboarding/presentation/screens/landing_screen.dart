@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../app/routes/my_app_router_const.dart';
+import 'package:hugeicons/hugeicons.dart';
+import '../../../../core/routes/my_app_router_const.dart';
 import '../../../home/presentation/screens/home_screen.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -12,8 +13,9 @@ class LandingScreen extends StatefulWidget {
 }
 
 class _LandingScreenState extends State<LandingScreen> {
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0.0;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -46,10 +48,6 @@ class _LandingScreenState extends State<LandingScreen> {
     final double bigIconOpacity = 1.0 - t;
     final double bigIconScale = 1.0 - (t * 0.4);
 
-    // Small icon fades in
-    final double smallIconOpacity = t;
-
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -74,39 +72,27 @@ class _LandingScreenState extends State<LandingScreen> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      // AnimatedOpacity(
-                      //   duration: const Duration(milliseconds: 300),
-                      //   opacity: smallIconOpacity,
-                      //   child: const Center(
-                      //     child: Padding(
-                      //       padding: EdgeInsets.only(top: 10, bottom: 10, right: 10),
-                      //       child: Icon(
-                      //         Icons.account_balance_wallet_rounded,
-                      //         size: 30,
-                      //         color: Color(0xFF3B82F6),
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         transitionBuilder: (child, animation) =>
                             FadeTransition(opacity: animation, child: child),
-                        child: _scrollOffset > 120 // show only after scroll threshold
+                        child:
+                            _scrollOffset >
+                                120 // show only after scroll threshold
                             ? const Padding(
-                          key: ValueKey('visibleIcon'),
-                          padding: EdgeInsets.only(right: 8),
-                          child: Icon(
-                            Icons.account_balance_wallet_rounded,
-                            size: 28,
-                            color: Color(0xFF2563EB),
-                          ),
-                        )
+                                key: ValueKey('visibleIcon'),
+                                padding: EdgeInsets.only(right: 8),
+                                child: HugeIcon(
+                                  icon: HugeIcons.strokeRoundedWallet01,
+                                  size: 28,
+                                  color: Color(0xFF2563EB),
+                                ),
+                              )
                             : const SizedBox(
-                          key: ValueKey('hiddenIcon'),
-                          width: 0,
-                          height: 0,
-                        ),
+                                key: ValueKey('hiddenIcon'),
+                                width: 0,
+                                height: 0,
+                              ),
                       ),
                       Text(
                         'Expense Manager',
@@ -144,7 +130,10 @@ class _LandingScreenState extends State<LandingScreen> {
                         scale: bigIconScale,
                         child: Container(
                           height: size.height * 0.35,
-                          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 24,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             gradient: const LinearGradient(
@@ -154,17 +143,17 @@ class _LandingScreenState extends State<LandingScreen> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.blue.withOpacity(0.3),
+                                color: Colors.blue.withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),
                             ],
                           ),
                           child: Center(
-                            child: Icon(
-                              Icons.account_balance_wallet_rounded,
+                            child: HugeIcon(
+                              icon: HugeIcons.strokeRoundedWallet01,
                               size: 120,
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                             ),
                           ),
                         ),
@@ -173,23 +162,28 @@ class _LandingScreenState extends State<LandingScreen> {
 
                     // Features
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
                       child: Column(
                         children: [
                           _buildFeatureTile(
-                            icon: Icons.insights_rounded,
+                            icon: HugeIcons.strokeRoundedAnalytics01,
                             title: 'Track Expenses',
-                            subtitle: 'Monitor your spending with detailed insights',
+                            subtitle:
+                                'Monitor your spending with detailed insights',
                           ),
                           const SizedBox(height: 16),
                           _buildFeatureTile(
-                            icon: Icons.pie_chart_rounded,
+                            icon: HugeIcons.strokeRoundedPieChart,
                             title: 'Visual Reports',
-                            subtitle: 'Understand your finances with beautiful charts',
+                            subtitle:
+                                'Understand your finances with beautiful charts',
                           ),
                           const SizedBox(height: 16),
                           _buildFeatureTile(
-                            icon: Icons.notifications_active_rounded,
+                            icon: HugeIcons.strokeRoundedNotification02,
                             title: 'Smart Reminders',
                             subtitle: 'Never miss a bill payment again',
                           ),
@@ -217,7 +211,9 @@ class _LandingScreenState extends State<LandingScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                               ),
                               child: Text(
                                 'Get Started',
@@ -239,16 +235,22 @@ class _LandingScreenState extends State<LandingScreen> {
                               onPressed: () {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                                  MaterialPageRoute(
+                                    builder: (context) => const HomeScreen(),
+                                  ),
                                 );
                               },
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF2563EB),
-                                side: const BorderSide(color: Color(0xFF2563EB)),
+                                side: const BorderSide(
+                                  color: Color(0xFF2563EB),
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                               ),
                               child: Text(
                                 'Continue as Guest',
@@ -271,9 +273,9 @@ class _LandingScreenState extends State<LandingScreen> {
       ),
     );
   }
-  
+
   Widget _buildFeatureTile({
-    required IconData icon,
+    required dynamic icon,
     required String title,
     required String subtitle,
   }) {
@@ -292,8 +294,8 @@ class _LandingScreenState extends State<LandingScreen> {
               color: const Color(0xFFEFF6FF),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
+            child: HugeIcon(
+              icon: icon,
               color: const Color(0xFF2563EB),
               size: 24,
             ),

@@ -1,4 +1,3 @@
-import 'package:expense_manager/features/expense/presentation/pages/add_expense_screen.dart';
 import 'package:expense_manager/features/auth/presentation/register_screen.dart';
 import 'package:expense_manager/features/splash/presentation/splash_screen.dart';
 import 'package:expense_manager/features/sync/presentation/pages/sync_page.dart';
@@ -8,6 +7,7 @@ import 'package:expense_manager/features/user/presentation/screens/profile_scree
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/expense/presentation/screens/add_expense_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/onboarding/presentation/screens/landing_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -88,7 +88,6 @@ class MyAppRouter {
         name: 'sync',
         path: MyAppRouteConst.sync,
         pageBuilder: (context, state) {
-          final user = state.extra as UserEntity;
           return const MaterialPage(child: SyncPage());
         },
       ),

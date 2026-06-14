@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final UserEntity user;
@@ -105,7 +106,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   decoration: InputDecoration(
                     hintText: 'Enter your full name',
-                    prefixIcon: const Icon(Icons.person_outline_rounded),
+                    prefixIcon: const HugeIcon(icon: HugeIcons.strokeRoundedUser, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -132,7 +133,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   decoration: InputDecoration(
                     hintText: 'Enter 6-character Family ID',
-                    prefixIcon: const Icon(Icons.family_restroom),
+                    prefixIcon: const HugeIcon(icon: HugeIcons.strokeRoundedUserGroup, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

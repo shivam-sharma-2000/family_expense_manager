@@ -1,8 +1,8 @@
 import 'package:expense_manager/core/service/auth_service.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/di/injection_container.dart';
-import '../../core/service/user_service.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/service/user_service.dart';
 
 class FamilyIdScreen extends StatefulWidget {
   final String email;

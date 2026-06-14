@@ -1,13 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_manager/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../app/routes/my_app_router_const.dart';
-import '../../../core/di/injection_container.dart';
-import '../../../core/service/auth_service.dart';
+import 'package:hugeicons/hugeicons.dart';
+import '../../../core/routes/my_app_router_const.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,7 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
-
 
   @override
   void initState() {
@@ -55,7 +51,12 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
 
-      context.read<AuthBloc>().add(LoginSubmitted(email: _emailController.text, password: _passwordController.text));
+      context.read<AuthBloc>().add(
+        LoginSubmitted(
+          email: _emailController.text,
+          password: _passwordController.text,
+        ),
+      );
       setState(() {
         _isLoading = false;
       });
@@ -72,29 +73,31 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthSuccess) {
-            context.go(MyAppRouteConst.home);
-          }
+      listener: (context, state) {
+        if (state is AuthSuccess) {
+          context.go(MyAppRouteConst.home);
+        }
 
-          if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          }
-        },
+        if (state is AuthFailure) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // Back button and title
                     Text(
                       'Welcome Back',
@@ -148,17 +151,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintStyle: GoogleFonts.poppins(
                           color: const Color(0xFF94A3B8),
                         ),
-                        prefixIcon: const Icon(
-                          Icons.alternate_email_outlined,
+                        prefixIcon: const HugeIcon(
+                          icon: HugeIcons.strokeRoundedMail01,
                           color: Color(0xFF94A3B8),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -196,15 +203,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintStyle: GoogleFonts.poppins(
                           color: const Color(0xFF94A3B8),
                         ),
-                        prefixIcon: const Icon(
-                          Icons.lock_outline_rounded,
+                        prefixIcon: const HugeIcon(
+                          icon: HugeIcons.strokeRoundedLockPassword,
                           color: Color(0xFF94A3B8),
                         ),
                         suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible
-                                ? Icons.visibility_off_rounded
-                                : Icons.visibility_rounded,
+                          icon: HugeIcon(
+                            icon: _isPasswordVisible
+                                ? HugeIcons.strokeRoundedViewOff
+                                : HugeIcons.strokeRoundedView,
                             color: const Color(0xFF94A3B8),
                           ),
                           onPressed: () {
@@ -215,11 +222,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -270,20 +281,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: _isLoading
                             ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
                             : Text(
-                          'Sign In',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                                'Sign In',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     ),
 
@@ -402,10 +413,8 @@ class _LoginScreenState extends State<LoginScreen> {
           icon,
           width: 24,
           height: 24,
-          errorBuilder: (context, error, stackTrace) => const Icon(
-            Icons.error_outline,
-            color: Colors.grey,
-          ),
+          errorBuilder: (context, error, stackTrace) =>
+              const HugeIcon(icon: HugeIcons.strokeRoundedAlert02, color: Colors.grey),
         ),
       ),
     );
@@ -414,19 +423,4 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> signInWithGoogle() async {
     context.read<AuthBloc>().add(GoogleLoginSubmitted());
   }
-
-  Future<void> _saveUserToFirestore(User user) async {
-    // final doc = _firestore.collection('users').doc(user.uid);
-    //
-    // await doc.set({
-    //   'uid': user.uid,
-    //   'name': user.displayName,
-    //   'email': user.email,
-    //   'photoUrl': user.photoURL ?? '',
-    //   'lastLogin': FieldValue.serverTimestamp(),
-    //   'createdAt': FieldValue.serverTimestamp(),
-    // }, SetOptions(merge: true));
-  }
-
 }
-

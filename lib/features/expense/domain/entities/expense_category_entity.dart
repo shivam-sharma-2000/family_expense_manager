@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class ExpenseCategory {
   final String name;
-  final IconData icon;
+  final dynamic icon;
   final Color color;
 
   const ExpenseCategory({

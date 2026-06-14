@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:expense_manager/core/di/injection_container.dart';
 import 'package:expense_manager/core/service/i_local_storage_service.dart';
 import 'package:expense_manager/features/user/presentation/bloc/user_bloc.dart';
@@ -9,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:expense_manager/features/family/presentation/widgets/create_family_dialog.dart';
 
 import '../../../../core/extensions/theme_extension.dart';
@@ -55,8 +54,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
+                  HugeIcon(
+                    icon: HugeIcons.strokeRoundedAlert02,
                     size: 64,
                     color: theme.colorScheme.error,
                   ),
@@ -106,8 +105,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         : null,
                     onBackgroundImageError: (_, __) {},
                     child: photoUrl.isEmpty
-                        ? Icon(
-                            Icons.person,
+                        ? HugeIcon(
+                            icon: HugeIcons.strokeRoundedUser,
                             size: 50,
                             color: theme.colorScheme.primary,
                           )
@@ -146,14 +145,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           _buildProfileItem(
                             context: context,
-                            icon: Icons.badge_outlined,
+                            icon: HugeIcons.strokeRoundedBadge,
                             title: 'User ID',
                             value: '${user.id.substring(0, 8)}...',
                           ),
                           const Divider(),
                           _buildProfileItem(
                             context: context,
-                            icon: Icons.family_restroom,
+                            icon: HugeIcons.strokeRoundedUserGroup,
                             title: 'Family ID',
                             value: user.familyId ?? 'None',
                           ),
@@ -171,8 +170,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         context.push('/edit_profile', extra: user);
                       },
-                      icon: Icon(
-                        Icons.edit,
+                      icon: HugeIcon(
+                        icon: HugeIcons.strokeRoundedEdit02,
                         color: context.theme.colorScheme.onPrimary,
                       ),
                       label: Text(
@@ -204,8 +203,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 CreateFamilyDialog(userId: user.id),
                           );
                         },
-                        icon: Icon(
-                          Icons.group_add,
+                        icon: HugeIcon(
+                          icon: HugeIcons.strokeRoundedUserGroup,
                           color: theme.colorScheme.primary,
                         ),
                         label: Text(
@@ -233,8 +232,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         context.push('/edit_profile', extra: user);
                       },
-                      icon: Icon(
-                        Icons.logout,
+                      icon: HugeIcon(
+                        icon: HugeIcons.strokeRoundedLogout01,
                         color: context.theme.colorScheme.onPrimary,
                       ),
                       label: Text(
@@ -261,8 +260,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         context.push('/sync', extra: user);
                       },
-                      icon: Icon(
-                        Icons.sync,
+                      icon: HugeIcon(
+                        icon: HugeIcons.strokeRoundedRefresh,
                         color: context.theme.colorScheme.onPrimary,
                       ),
                       label: Text(
@@ -294,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildProfileItem({
     required BuildContext context,
-    required IconData icon,
+    required dynamic icon,
     required String title,
     required String value,
   }) {
@@ -309,7 +308,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: theme.colorScheme.primary),
+            child: HugeIcon(icon: icon, color: theme.colorScheme.primary),
           ),
           const SizedBox(width: 16),
           Expanded(

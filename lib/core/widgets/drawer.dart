@@ -1,9 +1,7 @@
-import 'package:expense_manager/features/expense/presentation/pages/transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../core/di/injection_container.dart';
-import '../../core/service/auth_service.dart';
+import 'package:hugeicons/hugeicons.dart';
+import '../../features/expense/presentation/screens/transaction_screen.dart';
 import 'drawer_header.dart';
 import 'drawer_item.dart';
 
@@ -24,19 +22,19 @@ class HomeDrawer extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               children: [
                 DrawerItem(
-                  icon: Icons.dashboard_rounded,
+                  icon: HugeIcons.strokeRoundedDashboardSquare01,
                   title: 'Home',
                   onTap: () {},
                 ),
                 DrawerItem(
-                  icon: Icons.account_circle_rounded,
+                  icon: HugeIcons.strokeRoundedUser,
                   title: 'Profile',
                   onTap: () {
                     context.push('/profile');
                   },
                 ),
                 DrawerItem(
-                  icon: Icons.receipt_long_rounded,
+                  icon: HugeIcons.strokeRoundedRadar01,
                   title: 'Transaction',
                   onTap: () {
                     Navigator.push(

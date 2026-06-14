@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:hugeicons/hugeicons.dart';
 import '../../../../core/constants/expense_categories.dart';
 import '../../../../core/constants/payment_categories.dart';
 import '../../../../core/di/injection_container.dart';
@@ -29,12 +32,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _dateController = TextEditingController(
-    text: DateFormat('MMM dd, yyyy').format(DateTime.now()),
+    text: DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now()),
   );
 
   String _selectedCategory = 'Food';
   String _selectedPaymentMethod = 'Cash';
   DateTime _selectedDate = DateTime.now();
+  String? _receiptImagePath;
 
   @override
   void initState() {
@@ -50,7 +54,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
@@ -68,10 +72,44 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         );
       },
     );
-    if (picked != null && picked != _selectedDate) {
+    if (pickedDate != null && context.mounted) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_selectedDate),
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: Color(0xFF6C63FF),
+                onPrimary: Colors.white,
+                onSurface: Color(0xFF1E293B),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+      if (pickedTime != null) {
+        setState(() {
+          _selectedDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+          _dateController.text = DateFormat('MMM dd, yyyy HH:mm').format(_selectedDate);
+        });
+      }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
       setState(() {
-        _selectedDate = picked;
-        _dateController.text = DateFormat('MMM dd, yyyy').format(picked);
+        _receiptImagePath = image.path;
       });
     }
   }
@@ -113,7 +151,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         title: const Text('Add Expense'),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
+          icon: const HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -129,7 +167,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         title: const Text('Add Income'),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
+          icon: const HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -165,7 +203,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       fontWeight: FontWeight.w900,
                     ),
                     decoration: _inputDecoration(
-                      icon: Icons.currency_rupee,
+                      icon: HugeIcons.strokeRoundedMoney01,
                       inputBorder: false,
                       hintText: "0.00",
                     ),
@@ -189,7 +227,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     controller: _dateController,
                     readOnly: true,
                     onTap: () => _selectDate(context),
-                    decoration: _inputDecoration(icon: Icons.calendar_today),
+                    decoration: _inputDecoration(icon: HugeIcons.strokeRoundedCalendar01),
                   ),
                 ],
               ),
@@ -238,10 +276,74 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   TextFormField(
                     controller: _descriptionController,
                     decoration: _inputDecoration(
-                      icon: Icons.notes,
+                      icon: HugeIcons.strokeRoundedNote01,
                       hintText: "Describe you payment here",
                     ),
                   ),
+                ],
+              ),
+            ),
+
+            _gap(),
+
+            /// Attachment Card
+            _card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionTitle('Attachment (Receipt/Invoice)'),
+                  const SizedBox(height: 12),
+                  if (_receiptImagePath != null)
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            File(_receiptImagePath!),
+                            height: 150,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: GestureDetector(
+                            onTap: () => setState(() => _receiptImagePath = null),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    InkWell(
+                      onTap: _pickImage,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        height: 100,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.grey.shade50,
+                        ),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            HugeIcon(icon: HugeIcons.strokeRoundedImageAdd01, size: 32, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text('Attach Image', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -293,8 +395,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    category.icon,
+                  HugeIcon(
+                    icon: category.icon,
                     size: 22,
                     color: isSelected ? Colors.white : category.color,
                   ),
@@ -356,8 +458,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    method.icon,
+                  HugeIcon(
+                    icon: method.icon,
                     size: 22,
                     color: isSelected ? Colors.white : method.color,
                   ),
@@ -452,7 +554,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   }
 
   InputDecoration _inputDecoration({
-    required IconData icon,
+    required dynamic icon,
     bool inputBorder = true,
     String? hintText,
   }) {
@@ -462,7 +564,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
       floatingLabelBehavior: FloatingLabelBehavior.never,
 
-      prefixIcon: Icon(icon, color: Colors.grey),
+      prefixIcon: HugeIcon(icon: icon, color: Colors.grey),
 
       border: inputBorder
           ? OutlineInputBorder(
@@ -501,7 +603,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       date: _selectedDate,
       category: _selectedCategory,
       description: _descriptionController.text,
-      receiptImagePath: null,
+      receiptImagePath: _receiptImagePath,
       userId: await sl<ILocalStorageService>().userId ?? '',
       familyId: await sl<ILocalStorageService>().familyId ?? '',
       paymentMethod: _selectedPaymentMethod,

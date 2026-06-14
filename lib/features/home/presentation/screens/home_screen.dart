@@ -1,4 +1,3 @@
-import 'package:expense_manager/app/routes/my_app_router_const.dart';
 import 'package:expense_manager/core/extensions/theme_extension.dart';
 import 'package:expense_manager/core/service/i_local_storage_service.dart';
 import 'package:expense_manager/core/widgets/drawer.dart';
@@ -9,21 +8,23 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:hugeicons/hugeicons.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../auth/presentation/login_screen.dart';
+import '../../../../core/routes/my_app_router_const.dart';
+import '../../../../core/theme/bloc/theme_bloc.dart';
+import '../../../../core/theme/bloc/theme_event.dart';
+import '../../../../core/theme/bloc/theme_state.dart';
 import '../../../expense/domain/entities/expense.dart';
 import '../../../expense/presentation/bloc/expense_bloc.dart';
 import '../../../expense/presentation/bloc/expense_event.dart';
 import '../../../expense/presentation/bloc/expense_state.dart';
-import '../../../../app/theme/bloc/theme_bloc.dart';
-import '../../../../app/theme/bloc/theme_event.dart';
-import '../../../../app/theme/bloc/theme_state.dart';
 import '../../../user/domain/entities/user_entity.dart';
 import '../../../user/presentation/bloc/user_bloc.dart';
 import '../../../user/presentation/bloc/user_state.dart';
 import '../../../user/presentation/bloc/user_event.dart';
 import '../../../user/domain/repositories/user_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../expense/presentation/screens/transaction_details.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -49,11 +50,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<UserEntity> familyMembers = [];
 
   // Modern text styles
-  final TextStyle heading1 = GoogleFonts.poppins(
-    fontSize: 28,
-    fontWeight: FontWeight.bold,
-    letterSpacing: -0.5,
-  );
 
   final TextStyle heading2 = GoogleFonts.poppins(
     fontSize: 22,
@@ -65,8 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
     fontSize: 18,
     fontWeight: FontWeight.w600,
   );
-
-  final TextStyle bodyLarge = GoogleFonts.poppins(fontSize: 16, height: 1.5);
 
   final TextStyle bodyMedium = GoogleFonts.poppins(fontSize: 14, height: 1.5);
 
@@ -214,9 +208,13 @@ class _HomeScreenState extends State<HomeScreen> {
               elevation: 0,
               backgroundColor: Colors.transparent,
               leading: IconButton(
-                icon: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Icon(Icons.menu_sharp, size: 22),
+                icon: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: HugeIcon(
+                    icon: HugeIcons.strokeRoundedMenu01,
+                    size: 22,
+                    color: context.theme.colorScheme.onSurface,
+                  ),
                 ),
                 onPressed: () {
                   // open drawer
@@ -237,9 +235,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     return IconButton(
                       icon: Padding(
                         padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          isDark ? Icons.light_mode : Icons.dark_mode,
+                        child: HugeIcon(
+                          icon: isDark
+                              ? HugeIcons.strokeRoundedSun01
+                              : HugeIcons.strokeRoundedMoon02,
                           size: 24,
+                          color: isDark ? Colors.white : Colors.black,
                         ),
                       ),
                       onPressed: () {
@@ -251,7 +252,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 IconButton(
                   icon: Container(
                     padding: const EdgeInsets.all(8),
-                    child: const Icon(Icons.notifications_outlined, size: 24),
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedNotification01,
+                      size: 24,
+                      color: context.theme.colorScheme.onSurface,
+                    ),
                   ),
                   onPressed: () {},
                 ),
@@ -413,14 +418,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Monthly Income',
                             cBalance,
                             context.theme.colorScheme.secondary,
-                            Icons.arrow_downward,
+                            HugeIcons.strokeRoundedArrowDown01,
                           ),
                           const SizedBox(width: 20),
                           _buildSummaryCard(
                             'Monthly Expense',
                             dBalance,
                             context.theme.colorScheme.error,
-                            Icons.arrow_upward,
+                            HugeIcons.strokeRoundedArrowUp01,
                           ),
                         ],
                       ),
@@ -556,10 +561,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               .withValues(alpha: 0.2)
                                         : context.theme.colorScheme.secondary
                                               .withValues(alpha: 0.2),
-                                    child: Icon(
-                                      isExpense
-                                          ? Icons.arrow_upward
-                                          : Icons.arrow_downward,
+                                    child: HugeIcon(
+                                      icon: isExpense
+                                          ? HugeIcons.strokeRoundedArrowUp01
+                                          : HugeIcons.strokeRoundedArrowDown01,
                                       color: isExpense
                                           ? context.theme.colorScheme.error
                                           : context.theme.colorScheme.secondary,
@@ -588,7 +593,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   onTap: () {
-                                    // Navigate to expense detail
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TransactionDetails(
+                                              transaction: {
+                                                'amount': expense.amount,
+                                                'category': expense.category,
+                                                'transaction_method':
+                                                    expense.paymentMethod,
+                                                'entry_id': expense.id,
+                                                'date': expense.date
+                                                    ?.toIso8601String(),
+                                                'receipt_image_path':
+                                                    expense.receiptImagePath,
+                                              },
+                                            ),
+                                      ),
+                                    );
                                   },
                                 ),
                               );
@@ -599,8 +622,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Center(
                           child: Column(
                             children: [
-                              Icon(
-                                Icons.error_outline,
+                              HugeIcon(
+                                icon: HugeIcons.strokeRoundedAlert02,
                                 color: context.theme.colorScheme.error,
                                 size: 48,
                               ),
@@ -645,7 +668,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         _navigateToAddExpense('spend');
                       },
-                      icon: const Icon(Icons.arrow_upward, color: Colors.white),
+                      icon: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedArrowUp01,
+                        color: Colors.white,
+                      ),
                       label: Text('Spend', style: buttonText),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: context.theme.colorScheme.error,
@@ -662,8 +688,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         _navigateToAddExpense('receive');
                       },
-                      icon: const Icon(
-                        Icons.arrow_downward,
+                      icon: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedArrowDown01,
                         color: Colors.white,
                       ),
                       label: Text('Receive', style: buttonText),
@@ -689,7 +715,7 @@ class _HomeScreenState extends State<HomeScreen> {
     String title,
     double amount,
     Color color,
-    IconData icon,
+    dynamic icon,
   ) {
     return Expanded(
       child: Container(
@@ -707,7 +733,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 36, color: color),
+            HugeIcon(icon: icon, size: 36, color: color),
             const SizedBox(height: 12),
             Text(title, style: bodyMedium),
             const SizedBox(height: 8),
