@@ -49,30 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String? selectedFamilyMemberId;
   List<UserEntity> familyMembers = [];
 
-  // Modern text styles
-
-  final TextStyle heading2 = GoogleFonts.poppins(
-    fontSize: 22,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.3,
-  );
-
-  final TextStyle heading3 = GoogleFonts.poppins(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-  );
-
-  final TextStyle bodyMedium = GoogleFonts.poppins(fontSize: 14, height: 1.5);
-
-  final TextStyle bodySmall = GoogleFonts.poppins(fontSize: 12, height: 1.5);
-
-  final TextStyle buttonText = GoogleFonts.poppins(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    letterSpacing: 0.5,
-    color: Colors.white,
-  );
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -279,9 +255,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Profile Card
-                      Text('Welcome back', style: bodySmall),
+                      Text(
+                        'Welcome back',
+                        style: context.theme.textTheme.bodyMedium,
+                      ),
                       const SizedBox(height: 4),
-                      Text('Shivam Sharma', style: heading2),
+                      Text(
+                        'Shivam Sharma',
+                        style: context.theme.textTheme.headlineMedium,
+                      ),
 
                       const SizedBox(height: 20),
 
@@ -455,7 +437,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: const EdgeInsets.only(top: 15),
                               child: Column(
                                 children: [
-                                  Text('Top Five Expenses', style: heading3),
+                                  Text(
+                                    'Top Five Expenses',
+                                    style:
+                                        context.theme.textTheme.headlineSmall,
+                                  ),
                                   const SizedBox(height: 16),
                                   ExpenseBarChart(
                                     categoryCase: 'expense',
@@ -486,7 +472,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: const EdgeInsets.only(top: 15),
                               child: Column(
                                 children: [
-                                  Text('Top Five Incomes', style: heading3),
+                                  Text(
+                                    'Top Five Incomes',
+                                    style:
+                                        context.theme.textTheme.headlineSmall,
+                                  ),
                                   const SizedBox(height: 16),
                                   ExpenseBarChart(
                                     categoryCase: 'income',
@@ -504,7 +494,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Recent Transactions', style: heading3),
+                            Text(
+                              'Recent Transactions',
+                              style: context.theme.textTheme.headlineSmall,
+                            ),
                             TextButton(
                               onPressed: () {
                                 // Navigate to all transactions screen
@@ -572,14 +565,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   title: Text(
                                     expense.category,
-                                    style: heading3.copyWith(fontSize: 16),
+                                    style: context.theme.textTheme.headlineSmall
+                                        ?.copyWith(fontSize: 16),
                                   ),
                                   subtitle: (expense.date != null)
                                       ? Text(
                                           DateFormat(
                                             'MMM dd, yyyy',
                                           ).format(expense.date!),
-                                          style: bodySmall,
+                                          style:
+                                              context.theme.textTheme.bodySmall,
                                         )
                                       : const SizedBox.shrink(),
                                   trailing: Text(
@@ -630,14 +625,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 'Failed to load expenses',
-                                style: heading3.copyWith(
-                                  color: context.theme.colorScheme.error,
-                                ),
+                                style: context.theme.textTheme.headlineSmall
+                                    ?.copyWith(
+                                      color: context.theme.colorScheme.error,
+                                    ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 state.message,
-                                style: bodyMedium,
+                                style: context.theme.textTheme.bodyMedium,
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 16),
@@ -672,7 +668,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: HugeIcons.strokeRoundedArrowUp01,
                         color: Colors.white,
                       ),
-                      label: Text('Spend', style: buttonText),
+                      label: Text(
+                        'Spend',
+                        style: context.theme.textTheme.bodyMedium,
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: context.theme.colorScheme.error,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -692,7 +691,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: HugeIcons.strokeRoundedArrowDown01,
                         color: Colors.white,
                       ),
-                      label: Text('Receive', style: buttonText),
+                      label: Text(
+                        'Receive',
+                        style: context.theme.textTheme.bodyMedium,
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: context.theme.colorScheme.secondary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -735,11 +737,13 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             HugeIcon(icon: icon, size: 36, color: color),
             const SizedBox(height: 12),
-            Text(title, style: bodyMedium),
+            Text(title, style: context.theme.textTheme.bodyMedium),
             const SizedBox(height: 8),
             Text(
               '₹${amount.toStringAsFixed(2)}',
-              style: heading2.copyWith(color: color),
+              style: context.theme.textTheme.headlineMedium?.copyWith(
+                color: color,
+              ),
             ),
           ],
         ),

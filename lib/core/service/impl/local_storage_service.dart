@@ -14,6 +14,7 @@ final class LocalStorageService implements ILocalStorageService {
   static const _familyIdKey = 'family_id';
   static const _displayNameKey = 'display_name';
   static const _isOnBoardingComplete = 'is_onboarding_complete';
+  static const _hasSyncedOnceKey = 'has_synced_once';
   static const _themeModeKey = 'theme_mode';
 
   SharedPreferences? _cachedPrefs;
@@ -130,6 +131,18 @@ final class LocalStorageService implements ILocalStorageService {
   Future<void> setOnBoardingComplete(bool isComplete) async {
     final prefs = await _prefs;
     prefs.setBool(_isOnBoardingComplete, isComplete);
+  }
+
+  @override
+  Future<bool> get hasSyncedOnce async {
+    final prefs = await _prefs;
+    return prefs.getBool(_hasSyncedOnceKey) ?? false;
+  }
+
+  @override
+  Future<void> setHasSyncedOnce(bool value) async {
+    final prefs = await _prefs;
+    await prefs.setBool(_hasSyncedOnceKey, value);
   }
 
   // -------------------- 🎨 Theme --------------------

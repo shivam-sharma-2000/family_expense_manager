@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/expense/presentation/screens/add_expense_screen.dart';
+import '../../features/expense/presentation/screens/transaction_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/onboarding/presentation/screens/landing_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -89,6 +90,13 @@ class MyAppRouter {
         path: MyAppRouteConst.sync,
         pageBuilder: (context, state) {
           return const MaterialPage(child: SyncPage());
+        },
+      ),
+      GoRoute(
+        name: 'transactions',
+        path: MyAppRouteConst.transactions,
+        pageBuilder: (context, state) {
+          return const MaterialPage(child: TransactionScreen());
         },
       ),
     ],

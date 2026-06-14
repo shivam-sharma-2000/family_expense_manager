@@ -9,4 +9,5 @@ class MyAppRouteConst {
   static String profile = "/profile";
   static String editProfile = "/edit_profile";
   static String sync = "/sync";
+  static String transactions = "/transactions";
 }

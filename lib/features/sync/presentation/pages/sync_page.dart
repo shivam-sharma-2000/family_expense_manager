@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_manager/core/di/injection_container.dart';
 import 'package:expense_manager/features/expense/domain/usecases/sync_expense.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../../../core/routes/my_app_router_const.dart';
+import '../../../../core/service/i_local_storage_service.dart';
 
 class SyncPage extends StatefulWidget {
   const SyncPage({super.key});
@@ -42,8 +44,12 @@ class _SyncPageState extends State<SyncPage>
             SnackBar(content: Text('Sync failed: ${failure.title}')),
           );
         },
-        (_) {
-          // Success, navigate to home
+        (_) async {
+          // Success, mark as synced and navigate to home
+          final local = sl<ILocalStorageService>();
+          await local.setHasSyncedOnce(true);
+
+          if (!mounted) return;
           context.go(MyAppRouteConst.home);
         },
       );
@@ -72,14 +78,20 @@ class _SyncPageState extends State<SyncPage>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: Colors.white70),
+          icon: const HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: Colors.white70,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('Syncing', style: TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Colors.white70),
+            icon: const HugeIcon(
+              icon: HugeIcons.strokeRoundedCancel01,
+              color: Colors.white70,
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -110,11 +122,12 @@ class _SyncPageState extends State<SyncPage>
                     padding: const EdgeInsets.all(16),
                     child: Image.asset(
                       'assets/icons/expense_logo.png',
-                      errorBuilder: (context, error, stackTrace) => const HugeIcon(
-                        icon: HugeIcons.strokeRoundedWallet01,
-                        color: Colors.white,
-                        size: 40,
-                      ),
+                      errorBuilder: (context, error, stackTrace) =>
+                          const HugeIcon(
+                            icon: HugeIcons.strokeRoundedWallet01,
+                            color: Colors.white,
+                            size: 40,
+                          ),
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -163,9 +176,10 @@ class _SyncPageState extends State<SyncPage>
                       borderRadius: BorderRadius.circular(20),
                     ),
                     padding: const EdgeInsets.all(16),
-                    child: Image.network(
-                      'https://firebase.google.com/downloads/brand-guidelines/PNG/logo-logomark.png',
-                      errorBuilder: (context, error, stackTrace) => const HugeIcon(
+                    child: CachedNetworkImage(
+                      imageUrl:
+                          'https://firebase.google.com/downloads/brand-guidelines/PNG/logo-logomark.png',
+                      placeholder: (_, _) => const HugeIcon(
                         icon: HugeIcons.strokeRoundedCloud,
                         color: Colors.amber,
                         size: 40,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
-import '../../features/expense/presentation/screens/transaction_screen.dart';
+import '../routes/my_app_router_const.dart';
 import 'drawer_header.dart';
 import 'drawer_item.dart';
 
@@ -24,25 +24,25 @@ class HomeDrawer extends StatelessWidget {
                 DrawerItem(
                   icon: HugeIcons.strokeRoundedDashboardSquare01,
                   title: 'Home',
-                  onTap: () {},
+                  onTap: () {
+                    context.pop();
+                    context.go(MyAppRouteConst.home);
+                  },
                 ),
                 DrawerItem(
                   icon: HugeIcons.strokeRoundedUser,
                   title: 'Profile',
                   onTap: () {
-                    context.push('/profile');
+                    context.push(MyAppRouteConst.profile);
+                    context.pop();
                   },
                 ),
                 DrawerItem(
                   icon: HugeIcons.strokeRoundedRadar01,
-                  title: 'Transaction',
+                  title: 'Transactions',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TransactionScreen(),
-                      ),
-                    );
+                    context.push(MyAppRouteConst.transactions);
+                    context.pop();
                   },
                 ),
               ],

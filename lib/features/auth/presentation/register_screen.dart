@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../../core/routes/my_app_router_const.dart';
+import '../../../core/di/injection_container.dart';
+import '../../../core/service/i_local_storage_service.dart';
 import 'login_screen.dart';
 import 'bloc/auth_bloc.dart';
 
@@ -506,9 +508,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   // Register Button
                   BlocConsumer<AuthBloc, AuthState>(
-                    listener: (context, state) {
+                    listener: (context, state) async {
                       if (state is AuthSuccess) {
-                        context.pushReplacement(MyAppRouteConst.home);
+                        final local = sl<ILocalStorageService>();
+                        final hasSynced = await local.hasSyncedOnce;
+                        if (hasSynced) {
+                          if (!context.mounted) return;
+                          context.pushReplacement(MyAppRouteConst.home);
+                        } else {
+                          if (!context.mounted) return;
+                          context.pushReplacement(MyAppRouteConst.sync);
+                        }
                       }
                       if (state is AuthFailure) {
                         ScaffoldMessenger.of(

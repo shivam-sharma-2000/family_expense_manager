@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expense_manager/core/extensions/theme_extension.dart';
 import 'package:expense_manager/features/user/presentation/bloc/user_bloc.dart';
 import 'package:expense_manager/features/user/presentation/bloc/user_state.dart';
@@ -39,12 +40,12 @@ class DrawerHeaderSection extends StatelessWidget {
                   alpha: 0.5,
                 ),
                 child: ClipOval(
-                  child: Image.network(
-                    photoUrl!,
+                  child: CachedNetworkImage(
+                    imageUrl: photoUrl!,
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => HugeIcon(
+                    placeholder: (_, __) => HugeIcon(
                       icon: HugeIcons.strokeRoundedUser,
                       size: 28,
                       color: context.theme.colorScheme.primary,

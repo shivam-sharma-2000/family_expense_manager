@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../../core/routes/my_app_router_const.dart';
+import '../../../core/di/injection_container.dart';
+import '../../../core/service/i_local_storage_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -73,9 +75,17 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is AuthSuccess) {
-          context.go(MyAppRouteConst.home);
+          final local = sl<ILocalStorageService>();
+          final hasSynced = await local.hasSyncedOnce;
+          if (hasSynced) {
+            if (!context.mounted) return;
+            context.go(MyAppRouteConst.home);
+          } else {
+            if (!context.mounted) return;
+            context.go(MyAppRouteConst.sync);
+          }
         }
 
         if (state is AuthFailure) {

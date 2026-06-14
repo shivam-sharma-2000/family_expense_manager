@@ -33,7 +33,7 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     Emitter<ExpenseState> emit,
   ) async {
     // Fire and forget to prevent blocking other events like LoadExpensesEvent
-    syncExpense.call().catchError((e) {
+    syncExpense().catchError((e) {
       // Ignore background sync errors
       return const fpdart.Left(NetworkFailure());
     });

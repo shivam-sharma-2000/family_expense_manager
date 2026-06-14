@@ -25,37 +25,15 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
 
     // 1. Save locally FIRST so the UI updates instantly
     map[DatabaseHelper.columnIsSynced] = 0; // Not synced initially
-    
+
     await db.insert(
       DatabaseHelper.tableExpenses,
       map,
       conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
     );
 
-    // 2. Fire and forget remote push
-    _pushToRemoteBackground(expenseModel, map[DatabaseHelper.columnId]);
-
-    // 3. Return the locally generated ID instantly
-    return expense.id; 
-  }
-
-  Future<void> _pushToRemoteBackground(ExpenseModel expenseModel, String localId) async {
-    try {
-      await remote.setExpense(expenseModel);
-      
-      // Update local database with remote ID and mark as synced
-      final db = await databaseHelper.database;
-      await db.update(
-        DatabaseHelper.tableExpenses,
-        {
-          DatabaseHelper.columnIsSynced: 1,
-        },
-        where: '${DatabaseHelper.columnId} = ?',
-        whereArgs: [localId],
-      );
-    } catch (e) {
-      debugPrint('Background sync failed for expense $localId: $e');
-    }
+    // 2. Return the locally generated ID instantly
+    return expense.id;
   }
 
   @override
@@ -72,23 +50,6 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
       whereArgs: [expense.id],
     );
     _notifyExpensesChanged();
-
-    _pushUpdateToRemoteBackground(expenseModel, expense.id);
-  }
-
-  Future<void> _pushUpdateToRemoteBackground(ExpenseModel expenseModel, String localId) async {
-    try {
-      await remote.updateExpense(expenseModel);
-      final db = await databaseHelper.database;
-      await db.update(
-        DatabaseHelper.tableExpenses,
-        {DatabaseHelper.columnIsSynced: 1},
-        where: '${DatabaseHelper.columnId} = ?',
-        whereArgs: [localId],
-      );
-    } catch (e) {
-      debugPrint('Background update failed for $localId: $e');
-    }
   }
 
   @override
@@ -97,31 +58,11 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     // Soft delete
     await db.update(
       DatabaseHelper.tableExpenses,
-      {
-        DatabaseHelper.columnIsDeleted: 1,
-        DatabaseHelper.columnIsSynced: 0,
-      },
+      {DatabaseHelper.columnIsDeleted: 1, DatabaseHelper.columnIsSynced: 0},
       where: '${DatabaseHelper.columnId} = ?',
       whereArgs: [id],
     );
     _notifyExpensesChanged();
-
-    _pushDeleteToRemoteBackground(id);
-  }
-
-  Future<void> _pushDeleteToRemoteBackground(String id) async {
-    try {
-      await remote.deleteExpense(id);
-      final db = await databaseHelper.database;
-      // Hard delete locally once synced
-      await db.delete(
-        DatabaseHelper.tableExpenses,
-        where: '${DatabaseHelper.columnId} = ?',
-        whereArgs: [id],
-      );
-    } catch (e) {
-      debugPrint('Background delete failed for $id: $e');
-    }
   }
 
   @override
@@ -143,22 +84,10 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     String? familyId,
     List<String>? userIds,
   }) async {
+    _lastUserId = userId;
+    _lastFamilyId = familyId;
+
     // 1. Fetch local data first
-    final localData = await _getExpenses(
-      userId: userId,
-      familyId: familyId,
-      userIds: userIds,
-    );
-
-    // 2. If we have local data, return it immediately for instant UI
-    // and fire remote fetch in the background.
-    if (localData.isNotEmpty) {
-      _fetchRemoteAndCacheBackground(userId, familyId, userIds);
-      return localData;
-    }
-
-    // 3. If local DB is empty (first launch), wait for remote fetch
-    await _fetchRemoteAndCacheBackground(userId, familyId, userIds);
     return await _getExpenses(
       userId: userId,
       familyId: familyId,
@@ -182,7 +111,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
       bool hasChanges = false;
       for (final model in res) {
         final map = model.toMap();
-        map[DatabaseHelper.columnIsSynced] = 1; 
+        map[DatabaseHelper.columnIsSynced] = 1;
         await db.insert(
           DatabaseHelper.tableExpenses,
           map,
@@ -190,7 +119,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
         );
         hasChanges = true;
       }
-      
+
       if (hasChanges) {
         _notifyExpensesChanged();
       }
@@ -310,7 +239,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
             whereArgs: [map[DatabaseHelper.columnId]],
           );
         } catch (e) {
-          debugPrint('Failed to sync push expense ${map[DatabaseHelper.columnId]}: $e');
+          debugPrint(
+            'Failed to sync push expense ${map[DatabaseHelper.columnId]}: $e',
+          );
         }
       }
 
@@ -334,7 +265,6 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
       // 3. Pull latest from remote
       // We will pull the global dataset for the user/family if identifiers are set
       await _fetchRemoteAndCacheBackground(_lastUserId, _lastFamilyId, null);
-
     } catch (e) {
       debugPrint('Sync failed: $e');
     }
@@ -355,24 +285,5 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     } catch (e) {
       debugPrint('Error notifying expenses changed: $e');
     }
-  }
-
-  @override
-  void dispose() {
-    if (!_expensesController.isClosed) {
-      _expensesController.close();
-    }
-  }
-
-  @override
-  Future<List<String>> getExpenseCategories() {
-    // TODO: implement getExpenseCategories
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<double> getTotalExpense({DateTime? start, DateTime? end}) {
-    // TODO: implement getTotalExpense
-    throw UnimplementedError();
   }
 }

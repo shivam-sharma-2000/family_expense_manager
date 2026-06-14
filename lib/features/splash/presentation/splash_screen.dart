@@ -67,7 +67,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
     switch (role) {
       case UserRole.authenticated:
-        context.go(MyAppRouteConst.home);
+        final hasSynced = await local.hasSyncedOnce;
+        if (hasSynced) {
+          context.go(MyAppRouteConst.home);
+        } else {
+          context.go(MyAppRouteConst.sync);
+        }
         break;
 
       case UserRole.unauthenticated:

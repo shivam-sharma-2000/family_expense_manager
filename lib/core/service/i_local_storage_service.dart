@@ -19,6 +19,10 @@ abstract interface class ILocalStorageService {
 
   Future<void> setOnBoardingComplete(bool isComplete);
 
+  Future<bool> get hasSyncedOnce;
+
+  Future<void> setHasSyncedOnce(bool value);
+
   // -------------------- 🎨 Theme --------------------
 
   /// Saves the current theme mode (e.g., 'light', 'dark', 'system').
