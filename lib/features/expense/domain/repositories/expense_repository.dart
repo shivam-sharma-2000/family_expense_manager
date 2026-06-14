@@ -29,14 +29,7 @@ abstract class ExpenseRepository {
   /// Returns a Future for one-time fetch operations
   Future<List<Expense>> getExpensesByDateRange(DateTime start, DateTime end);
 
-  /// Calculates the total expense, optionally filtered by date range
-  /// Returns a Future for one-time calculation
-  Future<double> getTotalExpense({DateTime? start, DateTime? end});
-
   /// Syncs all local changes with Firebase
   /// Call this when the app comes back online
   Future<void> syncWithFirebase();
-
-  /// Get all available expense categories
-  Future<List<String>> getExpenseCategories();
 }
