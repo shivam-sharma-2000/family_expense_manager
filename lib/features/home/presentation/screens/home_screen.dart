@@ -186,9 +186,9 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: IconButton(
                 icon: Padding(
                   padding: const EdgeInsets.all(8),
-                  child: HugeIcon(
+                  child: HugeIcon(size: 18.0,  
                     icon: HugeIcons.strokeRoundedMenu01,
-                    size: 22,
+                    
                     color: context.theme.colorScheme.onSurface,
                   ),
                 ),
@@ -211,11 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     return IconButton(
                       icon: Padding(
                         padding: const EdgeInsets.all(8),
-                        child: HugeIcon(
+                        child: HugeIcon(size: 18.0,  
                           icon: isDark
                               ? HugeIcons.strokeRoundedSun01
                               : HugeIcons.strokeRoundedMoon02,
-                          size: 24,
+                          
                           color: isDark ? Colors.white : Colors.black,
                         ),
                       ),
@@ -228,9 +228,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 IconButton(
                   icon: Container(
                     padding: const EdgeInsets.all(8),
-                    child: HugeIcon(
+                    child: HugeIcon(size: 18.0,  
                       icon: HugeIcons.strokeRoundedNotification01,
-                      size: 24,
+                      
                       color: context.theme.colorScheme.onSurface,
                     ),
                   ),
@@ -554,7 +554,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               .withValues(alpha: 0.2)
                                         : context.theme.colorScheme.secondary
                                               .withValues(alpha: 0.2),
-                                    child: HugeIcon(
+                                    child: HugeIcon(size: 18.0,  
                                       icon: isExpense
                                           ? HugeIcons.strokeRoundedArrowUp01
                                           : HugeIcons.strokeRoundedArrowDown01,
@@ -617,10 +617,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         Center(
                           child: Column(
                             children: [
-                              HugeIcon(
+                              HugeIcon(size: 18.0,  
                                 icon: HugeIcons.strokeRoundedAlert02,
                                 color: context.theme.colorScheme.error,
-                                size: 48,
+                                
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -664,7 +664,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         _navigateToAddExpense('spend');
                       },
-                      icon: const HugeIcon(
+                      icon: const HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedArrowUp01,
                         color: Colors.white,
                       ),
@@ -687,7 +687,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         _navigateToAddExpense('receive');
                       },
-                      icon: const HugeIcon(
+                      icon: const HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedArrowDown01,
                         color: Colors.white,
                       ),
@@ -735,7 +735,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Column(
           children: [
-            HugeIcon(icon: icon, size: 36, color: color),
+            HugeIcon(size: 18.0,  icon: icon,  color: color),
             const SizedBox(height: 12),
             Text(title, style: context.theme.textTheme.bodyMedium),
             const SizedBox(height: 8),

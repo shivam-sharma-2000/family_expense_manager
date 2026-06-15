@@ -106,7 +106,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   decoration: InputDecoration(
                     hintText: 'Enter your full name',
-                    prefixIcon: const HugeIcon(icon: HugeIcons.strokeRoundedUser, color: Colors.grey),
+                    prefixIcon: const HugeIcon(size: 18.0,  icon: HugeIcons.strokeRoundedUser, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -133,7 +133,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   decoration: InputDecoration(
                     hintText: 'Enter 6-character Family ID',
-                    prefixIcon: const HugeIcon(icon: HugeIcons.strokeRoundedUserGroup, color: Colors.grey),
+                    prefixIcon: const HugeIcon(size: 18.0,  icon: HugeIcons.strokeRoundedUserGroup, color: Colors.grey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

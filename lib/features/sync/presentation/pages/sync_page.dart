@@ -78,7 +78,7 @@ class _SyncPageState extends State<SyncPage>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const HugeIcon(
+          icon: const HugeIcon(size: 18.0,  
             icon: HugeIcons.strokeRoundedArrowLeft01,
             color: Colors.white70,
           ),
@@ -88,7 +88,7 @@ class _SyncPageState extends State<SyncPage>
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const HugeIcon(
+            icon: const HugeIcon(size: 18.0,  
               icon: HugeIcons.strokeRoundedCancel01,
               color: Colors.white70,
             ),
@@ -123,10 +123,10 @@ class _SyncPageState extends State<SyncPage>
                     child: Image.asset(
                       'assets/icons/expense_logo.png',
                       errorBuilder: (context, error, stackTrace) =>
-                          const HugeIcon(
+                          const HugeIcon(size: 18.0,  
                             icon: HugeIcons.strokeRoundedWallet01,
                             color: Colors.white,
-                            size: 40,
+                            
                           ),
                     ),
                   ),
@@ -179,10 +179,10 @@ class _SyncPageState extends State<SyncPage>
                     child: CachedNetworkImage(
                       imageUrl:
                           'https://firebase.google.com/downloads/brand-guidelines/PNG/logo-logomark.png',
-                      placeholder: (_, _) => const HugeIcon(
+                      placeholder: (_, _) => const HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedCloud,
                         color: Colors.amber,
-                        size: 40,
+                        
                       ),
                     ),
                   ),

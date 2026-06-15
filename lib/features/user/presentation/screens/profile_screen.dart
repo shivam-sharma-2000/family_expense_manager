@@ -54,9 +54,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  HugeIcon(
+                  HugeIcon(size: 18.0,  
                     icon: HugeIcons.strokeRoundedAlert02,
-                    size: 64,
+                    
                     color: theme.colorScheme.error,
                   ),
                   const SizedBox(height: 16),
@@ -105,9 +105,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         : null,
                     onBackgroundImageError: (_, __) {},
                     child: photoUrl.isEmpty
-                        ? HugeIcon(
+                        ? HugeIcon(size: 18.0,  
                             icon: HugeIcons.strokeRoundedUser,
-                            size: 50,
+                            
                             color: theme.colorScheme.primary,
                           )
                         : null,
@@ -170,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         context.push('/edit_profile', extra: user);
                       },
-                      icon: HugeIcon(
+                      icon: HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedEdit02,
                         color: context.theme.colorScheme.onPrimary,
                       ),
@@ -203,7 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 CreateFamilyDialog(userId: user.id),
                           );
                         },
-                        icon: HugeIcon(
+                        icon: HugeIcon(size: 18.0,  
                           icon: HugeIcons.strokeRoundedUserGroup,
                           color: theme.colorScheme.primary,
                         ),
@@ -232,7 +232,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         context.push('/edit_profile', extra: user);
                       },
-                      icon: HugeIcon(
+                      icon: HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedLogout01,
                         color: context.theme.colorScheme.onPrimary,
                       ),
@@ -260,7 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         context.push('/sync', extra: user);
                       },
-                      icon: HugeIcon(
+                      icon: HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedRefresh,
                         color: context.theme.colorScheme.onPrimary,
                       ),
@@ -308,7 +308,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: HugeIcon(icon: icon, color: theme.colorScheme.primary),
+            child: HugeIcon(size: 18.0,  icon: icon, color: theme.colorScheme.primary),
           ),
           const SizedBox(width: 16),
           Expanded(

@@ -161,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintStyle: GoogleFonts.poppins(
                           color: const Color(0xFF94A3B8),
                         ),
-                        prefixIcon: const HugeIcon(
+                        prefixIcon: const HugeIcon(size: 18.0,  
                           icon: HugeIcons.strokeRoundedMail01,
                           color: Color(0xFF94A3B8),
                         ),
@@ -213,12 +213,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintStyle: GoogleFonts.poppins(
                           color: const Color(0xFF94A3B8),
                         ),
-                        prefixIcon: const HugeIcon(
+                        prefixIcon: const HugeIcon(size: 18.0,  
                           icon: HugeIcons.strokeRoundedLockPassword,
                           color: Color(0xFF94A3B8),
                         ),
                         suffixIcon: IconButton(
-                          icon: HugeIcon(
+                          icon: HugeIcon(size: 18.0,  
                             icon: _isPasswordVisible
                                 ? HugeIcons.strokeRoundedViewOff
                                 : HugeIcons.strokeRoundedView,
@@ -424,7 +424,7 @@ class _LoginScreenState extends State<LoginScreen> {
           width: 24,
           height: 24,
           errorBuilder: (context, error, stackTrace) =>
-              const HugeIcon(icon: HugeIcons.strokeRoundedAlert02, color: Colors.grey),
+              const HugeIcon(size: 18.0,  icon: HugeIcons.strokeRoundedAlert02, color: Colors.grey),
         ),
       ),
     );

@@ -220,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       hintStyle: GoogleFonts.poppins(
                         color: const Color(0xFF94A3B8),
                       ),
-                      prefixIcon: const HugeIcon(
+                      prefixIcon: const HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedUser,
                         color: Color(0xFF94A3B8),
                       ),
@@ -268,7 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       hintStyle: GoogleFonts.poppins(
                         color: const Color(0xFF94A3B8),
                       ),
-                      prefixIcon: const HugeIcon(
+                      prefixIcon: const HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedSmartPhone01,
                         color: Color(0xFF94A3B8),
                       ),
@@ -316,7 +316,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       hintStyle: GoogleFonts.poppins(
                         color: const Color(0xFF94A3B8),
                       ),
-                      prefixIcon: const HugeIcon(
+                      prefixIcon: const HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedMail01,
                         color: Color(0xFF94A3B8),
                       ),
@@ -364,7 +364,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       hintStyle: GoogleFonts.poppins(
                         color: const Color(0xFF94A3B8),
                       ),
-                      prefixIcon: const HugeIcon(
+                      prefixIcon: const HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedUserGroup,
                         color: Color(0xFF94A3B8),
                       ),
@@ -413,7 +413,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       hintStyle: GoogleFonts.poppins(
                         color: const Color(0xFF94A3B8),
                       ),
-                      prefixIcon: const HugeIcon(
+                      prefixIcon: const HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedKey01,
                         color: Color(0xFF94A3B8),
                       ),
@@ -423,7 +423,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             passwordVisible = !passwordVisible;
                           });
                         },
-                        child: HugeIcon(
+                        child: HugeIcon(size: 18.0,  
                           icon: passwordVisible
                               ? HugeIcons.strokeRoundedView
                               : HugeIcons.strokeRoundedViewOff,
@@ -477,7 +477,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       hintStyle: GoogleFonts.poppins(
                         color: const Color(0xFF94A3B8),
                       ),
-                      prefixIcon: const HugeIcon(
+                      prefixIcon: const HugeIcon(size: 18.0,  
                         icon: HugeIcons.strokeRoundedKey01,
                         color: Color(0xFF94A3B8),
                       ),

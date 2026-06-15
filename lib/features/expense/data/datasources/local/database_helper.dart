@@ -3,11 +3,14 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
   static const String _databaseName = 'expense_manager.db';
-  static const int _databaseVersion = 5; // Incremented version for schema changes
+  static const int _databaseVersion = 8; // Incremented version for schema changes
   
   // Table name
   static const String tableExpenses = 'expenses';
   static const String tableUsers = 'users';
+  static const String tableTenants = 'tenants';
+  static const String tableTenantBills = 'tenant_bills';
+  static const String tableTenantPayments = 'tenant_payments';
   
   // Expense Table Columns
   static const String columnId = 'id';
@@ -31,6 +34,48 @@ class DatabaseHelper {
   static const String columnUserFamilyId = 'familyId';
   static const String columnUserCreatedAt = 'createdAt';
   static const String columnUserUpdatedAt = 'updatedAt';
+
+  // Common Tenant Columns
+  static const String columnTenantId = 'tenant_id';
+  
+  // Tenant Table Columns
+  static const String columnTenantName = 'name';
+  static const String columnTenantMobile = 'mobile';
+  static const String columnTenantAadhaar = 'aadhaar';
+  static const String columnTenantFamilyMembers = 'family_members';
+  static const String columnTenantRoomNumber = 'room_number';
+  static const String columnTenantPhotoPath = 'photo_path';
+  static const String columnTenantRent = 'rent';
+  static const String columnTenantMaintenance = 'maintenance';
+  static const String columnTenantAdvance = 'advance';
+  static const String columnTenantRentStartDate = 'rent_start_date';
+  static const String columnTenantRentDueDate = 'rent_due_date';
+  static const String columnTenantStatus = 'status'; // active, vacated
+  static const String columnTenantMeterNumber = 'meter_number';
+  static const String columnTenantPreviousReading = 'previous_reading';
+  static const String columnTenantUnitRate = 'unit_rate';
+
+  // Tenant Bills Table Columns
+  static const String columnBillId = 'bill_id';
+  static const String columnBillMonth = 'month';
+  static const String columnBillYear = 'year';
+  static const String columnBillDate = 'bill_date';
+  static const String columnBillRentAmount = 'rent_amount';
+  static const String columnBillElectricityUnits = 'electricity_units';
+  static const String columnBillElectricityAmount = 'electricity_amount';
+  static const String columnBillMaintenanceAmount = 'maintenance_amount';
+  static const String columnBillPendingAmount = 'pending_amount';
+  static const String columnBillPreviousDue = 'previous_due';
+  static const String columnBillPaidAmount = 'paid_amount';
+  static const String columnBillAdvanceAdjustment = 'advance_adjustment';
+  static const String columnBillTotalAmount = 'total_amount';
+
+  // Tenant Payments Table Columns
+  static const String columnPaymentId = 'payment_id';
+  static const String columnPaymentDate = 'payment_date';
+  static const String columnPaymentAmount = 'amount';
+  static const String columnPaymentMode = 'payment_mode';
+  static const String columnPaymentNotes = 'notes';
   
   // Make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -94,6 +139,73 @@ class DatabaseHelper {
         $columnUserUpdatedAt TEXT
       )
     ''');
+
+    // Create tenants table
+    await db.execute('''
+      CREATE TABLE $tableTenants (
+        $columnId TEXT PRIMARY KEY,
+        $columnTenantName TEXT NOT NULL,
+        $columnTenantMobile TEXT NOT NULL,
+        $columnTenantAadhaar TEXT,
+        $columnTenantFamilyMembers INTEGER NOT NULL,
+        $columnTenantRoomNumber TEXT NOT NULL,
+        $columnTenantPhotoPath TEXT,
+        $columnTenantRent REAL NOT NULL,
+        $columnTenantMaintenance REAL NOT NULL DEFAULT 0,
+        $columnTenantAdvance REAL NOT NULL DEFAULT 0,
+        $columnTenantRentStartDate INTEGER NOT NULL,
+        $columnTenantRentDueDate INTEGER NOT NULL,
+        $columnTenantStatus TEXT NOT NULL,
+        $columnTenantMeterNumber TEXT,
+        $columnTenantPreviousReading REAL NOT NULL DEFAULT 0,
+        $columnTenantUnitRate REAL NOT NULL DEFAULT 0,
+        $columnUserId TEXT NOT NULL,
+        $columnFamilyId TEXT NOT NULL,
+        $columnIsSynced INTEGER NOT NULL DEFAULT 0,
+        $columnIsDeleted INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    // Create tenant bills table
+    await db.execute('''
+      CREATE TABLE $tableTenantBills (
+        $columnBillId TEXT PRIMARY KEY,
+        $columnTenantId TEXT NOT NULL,
+        $columnBillMonth INTEGER NOT NULL,
+        $columnBillYear INTEGER NOT NULL,
+        $columnBillDate INTEGER NOT NULL DEFAULT 0,
+        $columnBillRentAmount REAL NOT NULL,
+        $columnBillElectricityUnits REAL NOT NULL DEFAULT 0,
+        $columnBillElectricityAmount REAL NOT NULL DEFAULT 0,
+        $columnBillMaintenanceAmount REAL NOT NULL DEFAULT 0,
+        $columnBillPendingAmount REAL NOT NULL DEFAULT 0,
+        $columnBillPreviousDue REAL NOT NULL DEFAULT 0,
+        $columnBillPaidAmount REAL NOT NULL DEFAULT 0,
+        $columnBillAdvanceAdjustment REAL NOT NULL DEFAULT 0,
+        $columnBillTotalAmount REAL NOT NULL,
+        $columnUserId TEXT NOT NULL,
+        $columnFamilyId TEXT NOT NULL,
+        $columnIsSynced INTEGER NOT NULL DEFAULT 0,
+        $columnIsDeleted INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    // Create tenant payments table
+    await db.execute('''
+      CREATE TABLE $tableTenantPayments (
+        $columnPaymentId TEXT PRIMARY KEY,
+        $columnTenantId TEXT NOT NULL,
+        $columnBillId TEXT NOT NULL,
+        $columnPaymentDate INTEGER NOT NULL,
+        $columnPaymentAmount REAL NOT NULL,
+        $columnPaymentMode TEXT NOT NULL,
+        $columnPaymentNotes TEXT,
+        $columnUserId TEXT NOT NULL,
+        $columnFamilyId TEXT NOT NULL,
+        $columnIsSynced INTEGER NOT NULL DEFAULT 0,
+        $columnIsDeleted INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
   }
   
   // Handle database upgrades
@@ -141,6 +253,109 @@ class DatabaseHelper {
           $columnUserUpdatedAt TEXT
         )
       ''');
+    }
+
+    if (oldVersion < 6) {
+      // Create tenants table
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $tableTenants (
+          $columnId TEXT PRIMARY KEY,
+          $columnTenantName TEXT NOT NULL,
+          $columnTenantMobile TEXT NOT NULL,
+          $columnTenantAadhaar TEXT,
+          $columnTenantFamilyMembers INTEGER NOT NULL,
+          $columnTenantRoomNumber TEXT NOT NULL,
+          $columnTenantPhotoPath TEXT,
+          $columnTenantRent REAL NOT NULL,
+          $columnTenantMaintenance REAL NOT NULL DEFAULT 0,
+          $columnTenantAdvance REAL NOT NULL DEFAULT 0,
+          $columnTenantRentStartDate INTEGER NOT NULL,
+          $columnTenantRentDueDate INTEGER NOT NULL,
+          $columnTenantStatus TEXT NOT NULL,
+          $columnTenantMeterNumber TEXT,
+          $columnTenantPreviousReading REAL NOT NULL DEFAULT 0,
+          $columnTenantUnitRate REAL NOT NULL DEFAULT 0,
+          $columnUserId TEXT NOT NULL,
+          $columnFamilyId TEXT NOT NULL,
+          $columnIsSynced INTEGER NOT NULL DEFAULT 0,
+          $columnIsDeleted INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+
+      // Create tenant bills table
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $tableTenantBills (
+          $columnBillId TEXT PRIMARY KEY,
+          $columnTenantId TEXT NOT NULL,
+          $columnBillMonth INTEGER NOT NULL,
+          $columnBillYear INTEGER NOT NULL,
+          $columnBillDate INTEGER NOT NULL DEFAULT 0,
+          $columnBillRentAmount REAL NOT NULL,
+          $columnBillElectricityUnits REAL NOT NULL DEFAULT 0,
+          $columnBillElectricityAmount REAL NOT NULL DEFAULT 0,
+          $columnBillMaintenanceAmount REAL NOT NULL DEFAULT 0,
+          $columnBillPendingAmount REAL NOT NULL DEFAULT 0,
+          $columnBillPreviousDue REAL NOT NULL DEFAULT 0,
+          $columnBillPaidAmount REAL NOT NULL DEFAULT 0,
+          $columnBillAdvanceAdjustment REAL NOT NULL DEFAULT 0,
+          $columnBillTotalAmount REAL NOT NULL,
+          $columnUserId TEXT NOT NULL,
+          $columnFamilyId TEXT NOT NULL,
+          $columnIsSynced INTEGER NOT NULL DEFAULT 0,
+          $columnIsDeleted INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+
+      // Create tenant payments table
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $tableTenantPayments (
+          $columnPaymentId TEXT PRIMARY KEY,
+          $columnTenantId TEXT NOT NULL,
+          $columnBillId TEXT NOT NULL,
+          $columnPaymentDate INTEGER NOT NULL,
+          $columnPaymentAmount REAL NOT NULL,
+          $columnPaymentMode TEXT NOT NULL,
+          $columnPaymentNotes TEXT,
+          $columnUserId TEXT NOT NULL,
+          $columnFamilyId TEXT NOT NULL,
+          $columnIsSynced INTEGER NOT NULL DEFAULT 0,
+          $columnIsDeleted INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+    }
+
+    if (oldVersion < 7) {
+      try {
+        await db.execute('''
+          ALTER TABLE $tableTenantBills 
+          ADD COLUMN $columnBillDate INTEGER NOT NULL DEFAULT 0
+        ''');
+      } catch (e) {
+        // Ignore duplicate column error if already created
+      }
+    }
+
+    if (oldVersion < 8) {
+      try {
+        await db.execute('''
+          ALTER TABLE $tableTenantPayments 
+          ADD COLUMN $columnBillId TEXT NOT NULL DEFAULT ''
+        ''');
+      } catch (e) {}
+      
+      try {
+        await db.execute('''
+          ALTER TABLE $tableTenantBills 
+          ADD COLUMN $columnBillPreviousDue REAL NOT NULL DEFAULT 0
+        ''');
+      } catch (e) {}
+      
+      try {
+        await db.execute('''
+          ALTER TABLE $tableTenantBills 
+          ADD COLUMN $columnBillPaidAmount REAL NOT NULL DEFAULT 0
+        ''');
+      } catch (e) {}
     }
   }
 

@@ -1,6 +1,11 @@
 import 'package:expense_manager/features/auth/presentation/register_screen.dart';
 import 'package:expense_manager/features/splash/presentation/splash_screen.dart';
 import 'package:expense_manager/features/sync/presentation/pages/sync_page.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/tenants_list_screen.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/add_edit_tenant_screen.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/tenant_detail_screen.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/generate_bill_screen.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/add_payment_screen.dart';
 import 'package:expense_manager/features/user/domain/entities/user_entity.dart';
 import 'package:expense_manager/features/user/presentation/screens/edit_profile_screen.dart';
 import 'package:expense_manager/features/user/presentation/screens/profile_screen.dart';
@@ -97,6 +102,50 @@ class MyAppRouter {
         path: MyAppRouteConst.transactions,
         pageBuilder: (context, state) {
           return const MaterialPage(child: TransactionScreen());
+        },
+      ),
+
+      GoRoute(
+        name: 'tenants',
+        path: MyAppRouteConst.tenants,
+        pageBuilder: (context, state) {
+          return const MaterialPage(child: TenantsListScreen());
+        },
+      ),
+      GoRoute(
+        name: 'add_tenant',
+        path: MyAppRouteConst.addEditTenant,
+        pageBuilder: (context, state) {
+          return const MaterialPage(child: AddEditTenantScreen());
+        },
+      ),
+      GoRoute(
+        name: 'edit_tenant',
+        path: '${MyAppRouteConst.addEditTenant}/:id',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: AddEditTenantScreen(tenantId: state.pathParameters['id']));
+        },
+      ),
+      GoRoute(
+        name: 'tenant_detail',
+        path: '${MyAppRouteConst.tenantDetail}/:id',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: TenantDetailScreen(tenantId: state.pathParameters['id']!));
+        },
+      ),
+      GoRoute(
+        name: 'generate_bill',
+        path: '${MyAppRouteConst.generateBill}/:id',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: GenerateBillScreen(tenantId: state.pathParameters['id']!));
+        },
+      ),
+      GoRoute(
+        name: 'add_payment',
+        path: '${MyAppRouteConst.addPayment}/:id',
+        pageBuilder: (context, state) {
+          final billId = state.extra as String? ?? '';
+          return MaterialPage(child: AddPaymentScreen(tenantId: state.pathParameters['id']!, billId: billId));
         },
       ),
     ],

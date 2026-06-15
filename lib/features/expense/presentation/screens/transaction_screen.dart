@@ -98,12 +98,12 @@ class _TransactionScreenState extends State<TransactionScreen>
       },
       decoration: InputDecoration(
         hintText: 'Search transaction...',
-        prefixIcon: const HugeIcon(
+        prefixIcon: const HugeIcon(size: 18.0,  
           icon: HugeIcons.strokeRoundedSearch01,
           color: Colors.grey,
         ),
         suffixIcon: IconButton(
-          icon: const HugeIcon(
+          icon: const HugeIcon(size: 18.0,  
             icon: HugeIcons.strokeRoundedFilter,
             color: Colors.grey,
           ),
@@ -178,7 +178,7 @@ class _TransactionScreenState extends State<TransactionScreen>
                           right: 20,
                           child: GestureDetector(
                             onTap: () => Navigator.pop(context),
-                            child: HugeIcon(
+                            child: HugeIcon(size: 18.0,  
                               icon: HugeIcons.strokeRoundedCancel01,
                               color: context.theme.colorScheme.onSurface,
                             ),
@@ -478,7 +478,7 @@ class _TransactionScreenState extends State<TransactionScreen>
           backgroundColor: isExpense
               ? context.theme.colorScheme.error.withValues(alpha: .1)
               : context.theme.colorScheme.secondary.withValues(alpha: .1),
-          child: HugeIcon(
+          child: HugeIcon(size: 18.0,  
             icon: isExpense
                 ? HugeIcons.strokeRoundedArrowUp01
                 : HugeIcons.strokeRoundedArrowDown01,

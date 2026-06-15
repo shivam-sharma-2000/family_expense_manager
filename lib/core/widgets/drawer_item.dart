@@ -31,7 +31,7 @@ class DrawerItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           child: Row(
             children: [
-              HugeIcon(icon: icon, color: itemColor),
+              HugeIcon(size: 18.0,  icon: icon, color: itemColor),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(

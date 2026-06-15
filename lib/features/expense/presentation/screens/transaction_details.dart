@@ -54,9 +54,9 @@ class TransactionDetails extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: HugeIcon(
+                child: HugeIcon(size: 18.0,  
                   icon: isExpense ? HugeIcons.strokeRoundedArrowUp01 : HugeIcons.strokeRoundedArrowDown01,
-                  size: 48,
+                  
                   color: isExpense
                       ? context.theme.colorScheme.error
                       : context.theme.colorScheme.secondary,
@@ -162,10 +162,10 @@ class TransactionDetails extends StatelessWidget {
               color: context.theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: HugeIcon(
+            child: HugeIcon(size: 18.0,  
               icon: icon,
               color: context.theme.colorScheme.primary,
-              size: 20,
+              
             ),
           ),
           const SizedBox(width: 16),

@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../features/expense/data/datasources/local/database_helper.dart';
 import '../../features/expense/expense_di.dart' as expense_di;
+import '../../features/tenant/tenant_di.dart' as tenant_di;
 import '../theme/bloc/theme_bloc.dart';
 
 final sl = GetIt.instance;
@@ -41,6 +42,8 @@ Future<void> setupLocator() async {
     () => FamilyBloc(familyRepository: sl(), userRepository: sl()),
   );
   expense_di.registerExpenseModule(sl);
+  tenant_di.registerTenantModule(sl);
+
 }
 
 /// Core services

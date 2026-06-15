@@ -82,9 +82,9 @@ class _LandingScreenState extends State<LandingScreen> {
                             ? const Padding(
                                 key: ValueKey('visibleIcon'),
                                 padding: EdgeInsets.only(right: 8),
-                                child: HugeIcon(
+                                child: HugeIcon(size: 18.0,  
                                   icon: HugeIcons.strokeRoundedWallet01,
-                                  size: 28,
+                                  
                                   color: Color(0xFF2563EB),
                                 ),
                               )
@@ -150,9 +150,9 @@ class _LandingScreenState extends State<LandingScreen> {
                             ],
                           ),
                           child: Center(
-                            child: HugeIcon(
+                            child: HugeIcon(size: 18.0,  
                               icon: HugeIcons.strokeRoundedWallet01,
-                              size: 120,
+                              
                               color: Colors.white.withValues(alpha: 0.9),
                             ),
                           ),
@@ -294,10 +294,10 @@ class _LandingScreenState extends State<LandingScreen> {
               color: const Color(0xFFEFF6FF),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: HugeIcon(
+            child: HugeIcon(size: 18.0,  
               icon: icon,
               color: const Color(0xFF2563EB),
-              size: 24,
+              
             ),
           ),
           const SizedBox(width: 16),

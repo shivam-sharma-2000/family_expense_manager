@@ -41,13 +41,13 @@ class DrawerHeaderSection extends StatelessWidget {
                 ),
                 child: ClipOval(
                   child: CachedNetworkImage(
-                    imageUrl: photoUrl!,
+                    imageUrl: photoUrl ?? '',
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) => HugeIcon(
+                    placeholder: (_, __) => HugeIcon(size: 18.0,  
                       icon: HugeIcons.strokeRoundedUser,
-                      size: 28,
+                      
                       color: context.theme.colorScheme.primary,
                     ),
                   ),
