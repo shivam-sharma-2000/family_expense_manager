@@ -342,7 +342,10 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: Colors.white54),
-          prefixIcon: HugeIcon(size: 18.0, icon: icon, color: Colors.white54),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: HugeIcon(icon: icon, color: Colors.white54),
+          ),
           filled: true,
           fillColor: const Color(0xFF1A1A1A),
           border: OutlineInputBorder(
@@ -435,10 +438,12 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
       decoration: InputDecoration(
         labelText: 'Tenant Status',
         labelStyle: const TextStyle(color: Colors.white54),
-        prefixIcon: const HugeIcon(
-          size: 18.0,
-          icon: HugeIcons.strokeRoundedActivity01,
-          color: Colors.white54,
+        prefixIcon: const Padding(
+          padding: EdgeInsets.all(12.0),
+          child: HugeIcon(
+            icon: HugeIcons.strokeRoundedActivity01,
+            color: Colors.white54,
+          ),
         ),
         filled: true,
         fillColor: const Color(0xFF1A1A1A),
