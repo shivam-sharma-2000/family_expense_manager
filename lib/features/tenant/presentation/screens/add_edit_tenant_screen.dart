@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:uuid/uuid.dart';
@@ -36,7 +35,6 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
   final _dueDateController = TextEditingController();
   final _meterNumberController = TextEditingController();
   final _prevMeterReadingController = TextEditingController();
-  final _currMeterReadingController = TextEditingController();
   final _unitRateController = TextEditingController();
 
   DateTime _rentStartDate = DateTime.now();
@@ -54,7 +52,7 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
     setState(() => _isLoading = true);
     final getTenants = sl<GetTenants>();
     final result = await getTenants().first;
-    
+
     if (!mounted) return;
 
     result.fold(
@@ -64,7 +62,9 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
       (tenants) {
         if (mounted) {
           try {
-            _existingTenant = tenants.firstWhere((t) => t.id == widget.tenantId);
+            _existingTenant = tenants.firstWhere(
+              (t) => t.id == widget.tenantId,
+            );
             _populateFields();
           } catch (_) {
             // Not found
@@ -89,8 +89,8 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
     _depositController.text = t.advance.toString();
     _dueDateController.text = t.rentDueDate.toString();
     _meterNumberController.text = t.meterNumber ?? '';
-    _prevMeterReadingController.text = t.previousReading.toString();
-    _currMeterReadingController.text = t.previousReading.toString(); // Just default to previous
+    _prevMeterReadingController.text = t.previousReading
+        .toString(); // Just default to previous
     _unitRateController.text = t.unitRate.toString();
 
     _rentStartDate = t.rentStartDate;
@@ -110,7 +110,6 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
     _dueDateController.dispose();
     _meterNumberController.dispose();
     _prevMeterReadingController.dispose();
-    _currMeterReadingController.dispose();
     _unitRateController.dispose();
     super.dispose();
   }
@@ -128,7 +127,9 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
       id: _existingTenant?.id ?? const Uuid().v4(),
       name: _nameController.text.trim(),
       mobile: _mobileController.text.trim(),
-      aadhaar: _aadhaarController.text.trim().isEmpty ? null : _aadhaarController.text.trim(),
+      aadhaar: _aadhaarController.text.trim().isEmpty
+          ? null
+          : _aadhaarController.text.trim(),
       familyMembers: int.tryParse(_familyMembersController.text) ?? 1,
       roomNumber: _roomNumberController.text.trim(),
       photoPath: _existingTenant?.photoPath,
@@ -138,7 +139,9 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
       rentStartDate: _rentStartDate,
       rentDueDate: int.tryParse(_dueDateController.text) ?? 1,
       status: _status,
-      meterNumber: _meterNumberController.text.trim().isEmpty ? null : _meterNumberController.text.trim(),
+      meterNumber: _meterNumberController.text.trim().isEmpty
+          ? null
+          : _meterNumberController.text.trim(),
       previousReading: double.tryParse(_prevMeterReadingController.text) ?? 0.0,
       unitRate: double.tryParse(_unitRateController.text) ?? 0.0,
       userId: userId ?? '',
@@ -172,9 +175,11 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
           style: const TextStyle(color: Colors.white),
         ),
         leading: IconButton(
-          icon: const HugeIcon(size: 18.0,  
+          icon: const HugeIcon(
+            size: 18.0,
             icon: HugeIcons.strokeRoundedArrowLeft01,
-            color: Colors.white, ),
+            color: Colors.white,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -204,6 +209,7 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
                       label: 'Aadhaar Number (Optional)',
                       icon: HugeIcons.strokeRoundedLicense,
                       keyboardType: TextInputType.number,
+                      isRequired: false,
                     ),
                     _buildTextField(
                       controller: _familyMembersController,
@@ -230,12 +236,14 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
                       label: 'Maintenance Charges (₹)',
                       icon: HugeIcons.strokeRoundedMoney04,
                       keyboardType: TextInputType.number,
+                      isRequired: false,
                     ),
                     _buildTextField(
                       controller: _depositController,
                       label: 'Security Deposit (₹)',
                       icon: HugeIcons.strokeRoundedSafe,
                       keyboardType: TextInputType.number,
+                      isRequired: false,
                     ),
 
                     const SizedBox(height: 16),
@@ -253,7 +261,7 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
                     _buildStatusDropdown(),
 
                     const SizedBox(height: 24),
-                    _buildSectionTitle('Electricity Information (Optional)'),
+                    _buildSectionTitle('Electricity Information'),
                     _buildTextField(
                       controller: _meterNumberController,
                       label: 'Meter Number',
@@ -261,13 +269,6 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
                     ),
                     _buildTextField(
                       controller: _prevMeterReadingController,
-                      label: 'Previous Reading',
-                      icon: HugeIcons.strokeRoundedDashboardCircle,
-                      keyboardType: TextInputType.number,
-                      readOnly: isEditing,
-                    ),
-                    _buildTextField(
-                      controller: _currMeterReadingController,
                       label: 'Current Reading',
                       icon: HugeIcons.strokeRoundedDashboardCircle,
                       keyboardType: TextInputType.number,
@@ -329,6 +330,7 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
     required dynamic icon,
     TextInputType keyboardType = TextInputType.text,
     bool readOnly = false,
+    bool isRequired = true,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -340,7 +342,7 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: Colors.white54),
-          prefixIcon: HugeIcon(size: 18.0,  icon: icon, color: Colors.white54, ),
+          prefixIcon: HugeIcon(size: 18.0, icon: icon, color: Colors.white54),
           filled: true,
           fillColor: const Color(0xFF1A1A1A),
           border: OutlineInputBorder(
@@ -353,10 +355,9 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
           ),
         ),
         validator: (value) {
+          if (!isRequired) return null;
           if (value == null || value.isEmpty) {
             // Optional fields
-            if (label.contains('(Optional)') || label.contains('Electricity'))
-              return null;
             return 'This field is required';
           }
           return null;
@@ -399,9 +400,11 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
         ),
         child: Row(
           children: [
-            const HugeIcon(size: 18.0,  
+            const HugeIcon(
+              size: 18.0,
               icon: HugeIcons.strokeRoundedCalendar01,
-              color: Colors.white54, ),
+              color: Colors.white54,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -426,15 +429,17 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
 
   Widget _buildStatusDropdown() {
     return DropdownButtonFormField<TenantStatus>(
-      value: _status,
+      initialValue: _status,
       dropdownColor: const Color(0xFF1A1A1A),
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: 'Tenant Status',
         labelStyle: const TextStyle(color: Colors.white54),
-        prefixIcon: const HugeIcon(size: 18.0,  
+        prefixIcon: const HugeIcon(
+          size: 18.0,
           icon: HugeIcons.strokeRoundedActivity01,
-          color: Colors.white54, ),
+          color: Colors.white54,
+        ),
         filled: true,
         fillColor: const Color(0xFF1A1A1A),
         border: OutlineInputBorder(

@@ -13,6 +13,7 @@ import '../bloc/tenant_detail_bloc.dart';
 
 class GenerateBillScreen extends StatefulWidget {
   final String tenantId;
+
   const GenerateBillScreen({super.key, required this.tenantId});
 
   @override
@@ -32,8 +33,18 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
   bool _isLoading = false;
 
   final List<String> _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   @override
@@ -41,7 +52,9 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
     super.initState();
     final tenantBloc = context.read<TenantBloc>();
     if (tenantBloc.state is TenantLoaded) {
-      final tenant = (tenantBloc.state as TenantLoaded).tenants.firstWhere((t) => t.id == widget.tenantId);
+      final tenant = (tenantBloc.state as TenantLoaded).tenants.firstWhere(
+        (t) => t.id == widget.tenantId,
+      );
       _prevMeterController.text = tenant.previousReading.toString();
       _unitRateController.text = tenant.unitRate.toString();
       _maintenanceController.text = tenant.maintenance.toString();
@@ -50,12 +63,14 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
 
   Future<void> _generateBill() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isLoading = true);
 
     final tenantBloc = context.read<TenantBloc>();
     if (tenantBloc.state is! TenantLoaded) return;
-    final tenant = (tenantBloc.state as TenantLoaded).tenants.firstWhere((t) => t.id == widget.tenantId);
+    final tenant = (tenantBloc.state as TenantLoaded).tenants.firstWhere(
+      (t) => t.id == widget.tenantId,
+    );
 
     final prev = double.tryParse(_prevMeterController.text) ?? 0;
     final curr = double.tryParse(_currMeterController.text) ?? 0;
@@ -64,7 +79,7 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
 
     final double consumed = curr > prev ? curr - prev : 0.0;
     final double electricityAmt = consumed * rate;
-    
+
     final detailState = context.read<TenantDetailBloc>().state;
     TenantBillEntity? latestUnpaidBill;
     double previousDue = 0.0;
@@ -78,7 +93,8 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
       }
     }
 
-    final double total = tenant.rent + maintenance + electricityAmt + previousDue;
+    final double total =
+        tenant.rent + maintenance + electricityAmt + previousDue;
 
     final bill = TenantBillEntity(
       id: const Uuid().v4(),
@@ -113,7 +129,10 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
       await updateTenantBill(updatedOldBill);
     }
 
-    final bool needsUpdate = curr != prev || rate != tenant.unitRate || maintenance != tenant.maintenance;
+    final bool needsUpdate =
+        curr != prev ||
+        rate != tenant.unitRate ||
+        maintenance != tenant.maintenance;
     if (needsUpdate) {
       final updateTenant = sl<UpdateTenant>();
       final updatedTenant = tenant.copyWith(
@@ -126,7 +145,10 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
       if (mounted) context.read<TenantBloc>().add(LoadTenantsEvent());
     }
 
-    if (mounted) context.read<TenantDetailBloc>().add(LoadTenantDetailsEvent(tenantId: widget.tenantId));
+    if (mounted)
+      context.read<TenantDetailBloc>().add(
+        LoadTenantDetailsEvent(tenantId: widget.tenantId),
+      );
 
     if (!mounted) return;
     context.pop();
@@ -138,9 +160,16 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
       backgroundColor: const Color(0xFF111111),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Generate Bill', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Generate Bill',
+          style: TextStyle(color: Colors.white),
+        ),
         leading: IconButton(
-          icon: const HugeIcon(size: 18.0,  icon: HugeIcons.strokeRoundedArrowLeft01, color: Colors.white, ),
+          icon: const HugeIcon(
+            size: 18.0,
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: Colors.white,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -155,7 +184,7 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _selectedMonth,
+                      initialValue: _selectedMonth,
                       dropdownColor: const Color(0xFF1A1A1A),
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
@@ -163,16 +192,27 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
                         labelStyle: const TextStyle(color: Colors.white54),
                         filled: true,
                         fillColor: const Color(0xFF1A1A1A),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
-                      items: List.generate(12, (index) => DropdownMenuItem(value: index + 1, child: Text(_months[index]))),
-                      onChanged: (val) { if (val != null) setState(() => _selectedMonth = val); },
+                      items: List.generate(
+                        12,
+                        (index) => DropdownMenuItem(
+                          value: index + 1,
+                          child: Text(_months[index]),
+                        ),
+                      ),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedMonth = val);
+                      },
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: DropdownButtonFormField<int>(
-                      value: _selectedYear,
+                      initialValue: _selectedYear,
                       dropdownColor: const Color(0xFF1A1A1A),
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
@@ -180,28 +220,67 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
                         labelStyle: const TextStyle(color: Colors.white54),
                         filled: true,
                         fillColor: const Color(0xFF1A1A1A),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                       items: List.generate(10, (index) {
                         final yr = DateTime.now().year - 2 + index;
-                        return DropdownMenuItem(value: yr, child: Text(yr.toString()));
+                        return DropdownMenuItem(
+                          value: yr,
+                          child: Text(yr.toString()),
+                        );
                       }),
-                      onChanged: (val) { if (val != null) setState(() => _selectedYear = val); },
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedYear = val);
+                      },
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-              const Text('Electricity Reading', style: TextStyle(color: Colors.amber, fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text(
+                'Electricity Reading',
+                style: TextStyle(
+                  color: Colors.amber,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 16),
-              _buildTextField(controller: _prevMeterController, label: 'Previous Reading', icon: HugeIcons.strokeRoundedDashboardCircle, readOnly: true),
-              _buildTextField(controller: _currMeterController, label: 'Current Reading', icon: HugeIcons.strokeRoundedDashboardCircle),
-              _buildTextField(controller: _unitRateController, label: 'Per Unit Rate (₹)', icon: HugeIcons.strokeRoundedMoney01),
-              
+              _buildTextField(
+                controller: _prevMeterController,
+                label: 'Previous Reading',
+                icon: HugeIcons.strokeRoundedDashboardCircle,
+                readOnly: true,
+              ),
+              _buildTextField(
+                controller: _currMeterController,
+                label: 'Current Reading',
+                icon: HugeIcons.strokeRoundedDashboardCircle,
+              ),
+              _buildTextField(
+                controller: _unitRateController,
+                label: 'Per Unit Rate (₹)',
+                icon: HugeIcons.strokeRoundedMoney01,
+              ),
+
               const SizedBox(height: 24),
-              const Text('Other Charges', style: TextStyle(color: Colors.amber, fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text(
+                'Other Charges',
+                style: TextStyle(
+                  color: Colors.amber,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 16),
-              _buildTextField(controller: _maintenanceController, label: 'Maintenance (₹)', icon: HugeIcons.strokeRoundedMoney04),
+              _buildTextField(
+                controller: _maintenanceController,
+                label: 'Maintenance (₹)',
+                icon: HugeIcons.strokeRoundedMoney04,
+              ),
 
               BlocBuilder<TenantDetailBloc, TenantDetailState>(
                 builder: (context, detailState) {
@@ -220,10 +299,17 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
                       padding: const EdgeInsets.only(top: 16.0),
                       child: Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.redAccent.withAlpha(25), borderRadius: BorderRadius.circular(12)),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent.withAlpha(25),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: Row(
                           children: [
-                            const HugeIcon(size: 18.0,  icon: HugeIcons.strokeRoundedAlert01, color: Colors.redAccent, ),
+                            const HugeIcon(
+                              size: 18.0,
+                              icon: HugeIcons.strokeRoundedAlert01,
+                              color: Colors.redAccent,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
@@ -242,7 +328,9 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
 
               const SizedBox(height: 32),
               _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Colors.amber))
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.amber),
+                    )
                   : SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -250,10 +338,18 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.amber,
                           foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: _generateBill,
-                        child: const Text('Generate Bill', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'Generate Bill',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
             ],
@@ -279,11 +375,17 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: Colors.white54),
-          prefixIcon: HugeIcon(size: 18.0,  icon: icon, color: Colors.white54, ),
+          prefixIcon: HugeIcon(size: 18.0, icon: icon, color: Colors.white54),
           filled: true,
           fillColor: const Color(0xFF1A1A1A),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.amber)),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.amber),
+          ),
         ),
         validator: (val) => (val == null || val.isEmpty) ? 'Required' : null,
       ),

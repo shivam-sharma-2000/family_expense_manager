@@ -43,7 +43,7 @@ class _TenantsListScreenState extends State<TenantsListScreen> {
               color: Colors.amber,
             ),
             onPressed: () {
-              context.push('${MyAppRouteConst.addEditTenant}/new');
+              context.push(MyAppRouteConst.addEditTenant);
             },
           ),
         ],
@@ -84,7 +84,7 @@ class _TenantsListScreenState extends State<TenantsListScreen> {
                         foregroundColor: Colors.black,
                       ),
                       onPressed: () {
-                        context.push('${MyAppRouteConst.addEditTenant}/new');
+                        context.push(MyAppRouteConst.addEditTenant);
                       },
                       icon: const Icon(Icons.add),
                       label: const Text('Add Tenant'),

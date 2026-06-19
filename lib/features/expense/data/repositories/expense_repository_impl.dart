@@ -108,18 +108,20 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
       );
 
       final db = await databaseHelper.database;
+      
+      await db.transaction((txn) async {
+        await txn.delete(DatabaseHelper.tableExpenses);
 
-      await db.delete(DatabaseHelper.tableExpenses);
-
-      for (final model in res) {
-        final map = model.toMap();
-        map[DatabaseHelper.columnIsSynced] = 1;
-        await db.insert(
-          DatabaseHelper.tableExpenses,
-          map,
-          conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
-        );
-      }
+        for (final model in res) {
+          final map = model.toMap();
+          map[DatabaseHelper.columnIsSynced] = 1;
+          await txn.insert(
+            DatabaseHelper.tableExpenses,
+            map,
+            conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
+          );
+        }
+      });
 
       _notifyExpensesChanged();
     } catch (e) {
