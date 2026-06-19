@@ -166,6 +166,8 @@ class TenantRepositoryImpl implements TenantRepository {
       final remoteBills = await remoteDataSource.getTenantBills(familyId, userId);
       final remotePayments = await remoteDataSource.getTenantPayments(familyId, userId);
 
+      await localDataSource.clearAllTenantData();
+
       for (var t in remoteTenants) {
         final syncedModel = TenantModel.fromMap({...t.toMap(), 'is_synced': 1});
         await localDataSource.addTenant(syncedModel);

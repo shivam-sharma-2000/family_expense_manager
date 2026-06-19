@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_manager/core/di/injection_container.dart';
 import 'package:expense_manager/features/expense/domain/usecases/sync_expense.dart';
+import 'package:expense_manager/features/tenant/domain/repositories/tenant_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 
@@ -33,24 +34,37 @@ class _SyncPageState extends State<SyncPage>
   Future<void> _startSync() async {
     try {
       final syncExpense = sl<SyncExpense>();
-      final result = await syncExpense.call();
+      final expenseResult = await syncExpense.call();
+      
+      final tenantRepo = sl<TenantRepository>();
+      final tenantResult = await tenantRepo.syncWithFirebase();
 
       if (!mounted) return;
 
-      result.fold(
+      expenseResult.fold(
         (failure) {
           setState(() => _hasError = true);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Sync failed: ${failure.title}')),
+            SnackBar(content: Text('Expense sync failed: ${failure.title}')),
           );
         },
         (_) async {
-          // Success, mark as synced and navigate to home
-          final local = sl<ILocalStorageService>();
-          await local.setHasSyncedOnce(true);
+          tenantResult.fold(
+            (tFailure) {
+              setState(() => _hasError = true);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Tenant sync failed: ${tFailure.title}')),
+              );
+            },
+            (_) async {
+              // Success, mark as synced and navigate to home
+              final local = sl<ILocalStorageService>();
+              await local.setHasSyncedOnce(true);
 
-          if (!mounted) return;
-          context.go(MyAppRouteConst.home);
+              if (!mounted) return;
+              context.go(MyAppRouteConst.home);
+            }
+          );
         },
       );
     } catch (e) {

@@ -108,7 +108,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
       );
 
       final db = await databaseHelper.database;
-      bool hasChanges = false;
+
+      await db.delete(DatabaseHelper.tableExpenses);
+
       for (final model in res) {
         final map = model.toMap();
         map[DatabaseHelper.columnIsSynced] = 1;
@@ -117,12 +119,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           map,
           conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
         );
-        hasChanges = true;
       }
 
-      if (hasChanges) {
-        _notifyExpensesChanged();
-      }
+      _notifyExpensesChanged();
     } catch (e) {
       debugPrint('Background fetch error: $e');
     }
@@ -143,12 +142,13 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
       where +=
           ' AND ${DatabaseHelper.columnUserId} IN (${List.filled(userIds.length, '?').join(',')})';
       whereArgs.addAll(userIds);
+    } else if (userId != null && familyId != null) {
+      where += ' AND (${DatabaseHelper.columnUserId} = ? OR ${DatabaseHelper.columnFamilyId} = ?)';
+      whereArgs.addAll([userId, familyId]);
     } else if (userId != null) {
       where += ' AND ${DatabaseHelper.columnUserId} = ?';
       whereArgs.add(userId);
-    }
-
-    if (familyId != null) {
+    } else if (familyId != null) {
       where += ' AND ${DatabaseHelper.columnFamilyId} = ?';
       whereArgs.add(familyId);
     }
@@ -178,12 +178,13 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
         '${DatabaseHelper.columnCategory} = ? AND ${DatabaseHelper.columnIsDeleted} = ?';
     List<dynamic> whereArgs = [category, 0];
 
-    if (userId != null) {
+    if (userId != null && familyId != null) {
+      where += ' AND (${DatabaseHelper.columnUserId} = ? OR ${DatabaseHelper.columnFamilyId} = ?)';
+      whereArgs.addAll([userId, familyId]);
+    } else if (userId != null) {
       where += ' AND ${DatabaseHelper.columnUserId} = ?';
       whereArgs.add(userId);
-    }
-
-    if (familyId != null) {
+    } else if (familyId != null) {
       where += ' AND ${DatabaseHelper.columnFamilyId} = ?';
       whereArgs.add(familyId);
     }

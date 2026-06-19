@@ -15,6 +15,8 @@ class ExpenseRemoteDataSourceImpl implements ExpenseRemoteDataSource {
     if (userIds != null && userIds.isNotEmpty) {
       // Split userIds into chunks of 30 if necessary, but assume < 30 for family
       query = query.where('user_id', whereIn: userIds);
+    } else if (familyId != null && familyId.isNotEmpty && userId != null && userId.isNotEmpty) {
+      query = query.where(Filter.or(Filter('family_id', isEqualTo: familyId), Filter('user_id', isEqualTo: userId)));
     } else if (familyId != null && familyId.isNotEmpty) {
       query = query.where('family_id', isEqualTo: familyId);
     } else if (userId != null && userId.isNotEmpty) {
