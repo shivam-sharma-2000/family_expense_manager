@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/extensions/theme_extension.dart';
 import '../../domain/entities/tenant_entity.dart';
 import '../../domain/usecases/add_tenant.dart';
 import '../../domain/usecases/update_tenant.dart';
@@ -167,24 +168,24 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
     final isEditing = widget.tenantId != null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF111111),
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
           isEditing ? 'Edit Tenant' : 'Add Tenant',
-          style: const TextStyle(color: Colors.white),
+          style: context.theme.textTheme.headlineMedium,
         ),
         leading: IconButton(
-          icon: const HugeIcon(
+          icon: HugeIcon(
             size: 18.0,
             icon: HugeIcons.strokeRoundedArrowLeft01,
-            color: Colors.white,
+            color: context.theme.colorScheme.onSurface,
           ),
           onPressed: () => context.pop(),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.amber))
+          ? Center(child: CircularProgressIndicator(color: context.theme.colorScheme.primary))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Form(
@@ -286,8 +287,8 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
-                          foregroundColor: Colors.black,
+                          backgroundColor: context.theme.colorScheme.primary,
+                          foregroundColor: context.theme.colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -315,8 +316,8 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Colors.amber,
+        style: TextStyle(
+          color: context.theme.colorScheme.primary,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
@@ -338,23 +339,23 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
         controller: controller,
         readOnly: readOnly,
         keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: context.theme.colorScheme.onSurface),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white54),
+          labelStyle: TextStyle(color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54)),
           prefixIcon: Padding(
             padding: const EdgeInsets.all(12.0),
-            child: HugeIcon(icon: icon, color: Colors.white54),
+            child: HugeIcon(icon: icon, color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54)),
           ),
           filled: true,
-          fillColor: const Color(0xFF1A1A1A),
+          fillColor: context.theme.cardColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.amber),
+            borderSide: BorderSide(color: context.theme.colorScheme.primary),
           ),
         ),
         validator: (value) {
@@ -380,12 +381,7 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
-                colorScheme: const ColorScheme.dark(
-                  primary: Colors.amber,
-                  onPrimary: Colors.black,
-                  surface: Color(0xFF1A1A1A),
-                  onSurface: Colors.white,
-                ),
+                colorScheme: context.theme.colorScheme,
               ),
               child: child!,
             );
@@ -398,28 +394,28 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
+          color: context.theme.cardColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            const HugeIcon(
+            HugeIcon(
               size: 18.0,
               icon: HugeIcons.strokeRoundedCalendar01,
-              color: Colors.white54,
+              color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Rent Start Date',
-                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                    style: TextStyle(color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54), fontSize: 12),
                   ),
                   Text(
                     '${_rentStartDate.day}/${_rentStartDate.month}/${_rentStartDate.year}',
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    style: TextStyle(color: context.theme.colorScheme.onSurface, fontSize: 16),
                   ),
                 ],
               ),
@@ -433,20 +429,20 @@ class _AddEditTenantScreenState extends State<AddEditTenantScreen> {
   Widget _buildStatusDropdown() {
     return DropdownButtonFormField<TenantStatus>(
       initialValue: _status,
-      dropdownColor: const Color(0xFF1A1A1A),
-      style: const TextStyle(color: Colors.white),
+      dropdownColor: context.theme.cardColor,
+      style: TextStyle(color: context.theme.colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: 'Tenant Status',
-        labelStyle: const TextStyle(color: Colors.white54),
-        prefixIcon: const Padding(
-          padding: EdgeInsets.all(12.0),
+        labelStyle: TextStyle(color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54)),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.all(12.0),
           child: HugeIcon(
             icon: HugeIcons.strokeRoundedActivity01,
-            color: Colors.white54,
+            color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
           ),
         ),
         filled: true,
-        fillColor: const Color(0xFF1A1A1A),
+        fillColor: context.theme.cardColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

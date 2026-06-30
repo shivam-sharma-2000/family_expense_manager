@@ -98,7 +98,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             pickedTime.hour,
             pickedTime.minute,
           );
-          _dateController.text = DateFormat('MMM dd, yyyy HH:mm').format(_selectedDate);
+          _dateController.text = DateFormat(
+            'MMM dd, yyyy HH:mm',
+          ).format(_selectedDate);
         });
       }
     }
@@ -151,7 +153,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         title: const Text('Add Expense'),
         centerTitle: true,
         leading: IconButton(
-          icon: const HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: Colors.black),
+          icon: const HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: Colors.black,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -167,7 +172,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         title: const Text('Add Income'),
         centerTitle: true,
         leading: IconButton(
-          icon: const HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: Colors.black),
+          icon: const HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: Colors.black,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -227,7 +235,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     controller: _dateController,
                     readOnly: true,
                     onTap: () => _selectDate(context),
-                    decoration: _inputDecoration(icon: HugeIcons.strokeRoundedCalendar01),
+                    decoration: _inputDecoration(
+                      icon: HugeIcons.strokeRoundedCalendar01,
+                    ),
                   ),
                 ],
               ),
@@ -309,14 +319,19 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           right: 8,
                           top: 8,
                           child: GestureDetector(
-                            onTap: () => setState(() => _receiptImagePath = null),
+                            onTap: () =>
+                                setState(() => _receiptImagePath = null),
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: const BoxDecoration(
                                 color: Colors.black54,
                                 shape: BoxShape.circle,
                               ),
-                              child: const HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: Colors.white, size: 20),
+                              child: const HugeIcon(
+                                icon: HugeIcons.strokeRoundedCancel01,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
@@ -330,16 +345,29 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         height: 100,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300, width: 2),
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                            width: 2,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                           color: Colors.grey.shade50,
                         ),
                         child: const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            HugeIcon(icon: HugeIcons.strokeRoundedImageAdd01, size: 32, color: Colors.grey),
+                            HugeIcon(
+                              icon: HugeIcons.strokeRoundedImageAdd01,
+                              size: 32,
+                              color: Colors.grey,
+                            ),
                             SizedBox(height: 8),
-                            Text('Attach Image', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+                            Text(
+                              'Attach Image',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -564,7 +592,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
       floatingLabelBehavior: FloatingLabelBehavior.never,
 
-      prefixIcon: HugeIcon(icon: icon, color: Colors.grey),
+      prefixIcon: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: HugeIcon(icon: icon, color: Colors.grey),
+      ),
 
       border: inputBorder
           ? OutlineInputBorder(

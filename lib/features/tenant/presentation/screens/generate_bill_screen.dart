@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/extensions/theme_extension.dart';
 import '../../domain/entities/tenant_bill_entity.dart';
 import '../../domain/usecases/add_tenant_bill.dart';
 import '../../domain/usecases/update_tenant_bill.dart';
@@ -157,18 +158,17 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF111111),
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text(
+        title: Text(
           'Generate Bill',
-          style: TextStyle(color: Colors.white),
+          style: context.theme.textTheme.headlineMedium,
         ),
         leading: IconButton(
-          icon: const HugeIcon(
-            size: 18.0,
+          icon: HugeIcon(
             icon: HugeIcons.strokeRoundedArrowLeft01,
-            color: Colors.white,
+            color: context.theme.colorScheme.onSurface,
           ),
           onPressed: () => context.pop(),
         ),
@@ -185,13 +185,19 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
                   Expanded(
                     child: DropdownButtonFormField<int>(
                       initialValue: _selectedMonth,
-                      dropdownColor: const Color(0xFF1A1A1A),
-                      style: const TextStyle(color: Colors.white),
+                      dropdownColor: context.theme.cardColor,
+                      style: TextStyle(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Month',
-                        labelStyle: const TextStyle(color: Colors.white54),
+                        labelStyle: TextStyle(
+                          color: context.theme.colorScheme.onSurface.withValues(
+                            alpha: 0.54,
+                          ),
+                        ),
                         filled: true,
-                        fillColor: const Color(0xFF1A1A1A),
+                        fillColor: context.theme.cardColor,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -213,13 +219,19 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
                   Expanded(
                     child: DropdownButtonFormField<int>(
                       initialValue: _selectedYear,
-                      dropdownColor: const Color(0xFF1A1A1A),
-                      style: const TextStyle(color: Colors.white),
+                      dropdownColor: context.theme.cardColor,
+                      style: TextStyle(
+                        color: context.theme.colorScheme.onSurface,
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Year',
-                        labelStyle: const TextStyle(color: Colors.white54),
+                        labelStyle: TextStyle(
+                          color: context.theme.colorScheme.onSurface.withValues(
+                            alpha: 0.54,
+                          ),
+                        ),
                         filled: true,
-                        fillColor: const Color(0xFF1A1A1A),
+                        fillColor: context.theme.cardColor,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -240,10 +252,10 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
                 ],
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Electricity Reading',
                 style: TextStyle(
-                  color: Colors.amber,
+                  color: context.theme.colorScheme.primary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -267,10 +279,10 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
               ),
 
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Other Charges',
                 style: TextStyle(
-                  color: Colors.amber,
+                  color: context.theme.colorScheme.primary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -300,21 +312,25 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.redAccent.withAlpha(25),
+                          color: context.theme.colorScheme.error.withValues(
+                            alpha: 0.1,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           children: [
-                            const HugeIcon(
+                            HugeIcon(
                               size: 18.0,
                               icon: HugeIcons.strokeRoundedAlert01,
-                              color: Colors.redAccent,
+                              color: context.theme.colorScheme.error,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 'Previous Due of ₹$previousDue will be carried forward and added to this bill automatically.',
-                                style: const TextStyle(color: Colors.redAccent),
+                                style: TextStyle(
+                                  color: context.theme.colorScheme.error,
+                                ),
                               ),
                             ),
                           ],
@@ -328,16 +344,18 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
 
               const SizedBox(height: 32),
               _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(color: Colors.amber),
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: context.theme.colorScheme.primary,
+                      ),
                     )
                   : SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
-                          foregroundColor: Colors.black,
+                          backgroundColor: context.theme.colorScheme.primary,
+                          foregroundColor: context.theme.colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -371,20 +389,28 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
         controller: controller,
         readOnly: readOnly,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: context.theme.colorScheme.onSurface),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white54),
-          prefixIcon: HugeIcon(size: 18.0, icon: icon, color: Colors.white54),
+          labelStyle: TextStyle(
+            color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
+          ),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: HugeIcon(
+              icon: icon,
+              color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
+            ),
+          ),
           filled: true,
-          fillColor: const Color(0xFF1A1A1A),
+          fillColor: context.theme.cardColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.amber),
+            borderSide: BorderSide(color: context.theme.colorScheme.primary),
           ),
         ),
         validator: (val) => (val == null || val.isEmpty) ? 'Required' : null,

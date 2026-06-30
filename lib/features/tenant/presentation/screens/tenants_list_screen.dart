@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
+import '../../../../core/extensions/theme_extension.dart';
 import '../../../../core/routes/my_app_router_const.dart';
 import '../../domain/entities/tenant_entity.dart';
 import '../bloc/tenant_bloc.dart';
@@ -23,24 +24,24 @@ class _TenantsListScreenState extends State<TenantsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF111111),
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Tenants', style: TextStyle(color: Colors.white)),
+        title: Text('Tenants', style: context.theme.textTheme.headlineMedium),
         leading: IconButton(
-          icon: const HugeIcon(
+          icon: HugeIcon(
             size: 18.0,
             icon: HugeIcons.strokeRoundedArrowLeft01,
-            color: Colors.white,
+            color: context.theme.colorScheme.onSurface,
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
-            icon: const HugeIcon(
+            icon: HugeIcon(
               size: 18.0,
               icon: HugeIcons.strokeRoundedAdd01,
-              color: Colors.amber,
+              color: context.theme.colorScheme.primary,
             ),
             onPressed: () {
               context.push(MyAppRouteConst.addEditTenant);
@@ -51,14 +52,14 @@ class _TenantsListScreenState extends State<TenantsListScreen> {
       body: BlocBuilder<TenantBloc, TenantState>(
         builder: (context, state) {
           if (state is TenantLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.amber),
+            return Center(
+              child: CircularProgressIndicator(color: context.theme.colorScheme.primary),
             );
           } else if (state is TenantError) {
             return Center(
               child: Text(
                 'Error: ${state.failure.title}',
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: context.theme.colorScheme.error),
               ),
             );
           } else if (state is TenantLoaded) {
@@ -67,21 +68,21 @@ class _TenantsListScreenState extends State<TenantsListScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const HugeIcon(
+                    HugeIcon(
                       size: 18.0,
                       icon: HugeIcons.strokeRoundedUserGroup,
-                      color: Colors.white54,
+                      color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'No tenants added yet',
-                      style: TextStyle(color: Colors.white54, fontSize: 16),
+                      style: TextStyle(color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54), fontSize: 16),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
+                        backgroundColor: context.theme.colorScheme.primary,
+                        foregroundColor: Colors.white,
                       ),
                       onPressed: () {
                         context.push(MyAppRouteConst.addEditTenant);
@@ -123,7 +124,7 @@ class _TenantsListScreenState extends State<TenantsListScreen> {
                     title: 'Total Monthly Rent',
                     value: '₹${totalRent.toStringAsFixed(0)}',
                     icon: HugeIcons.strokeRoundedWallet01,
-                    color: Colors.green,
+                    color: context.theme.colorScheme.secondary,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -132,7 +133,7 @@ class _TenantsListScreenState extends State<TenantsListScreen> {
                     title: 'Occupied Rooms',
                     value: '${activeTenants.length}',
                     icon: HugeIcons.strokeRoundedHome01,
-                    color: Colors.blue,
+                    color: context.theme.colorScheme.primary,
                   ),
                 ),
               ],
@@ -171,9 +172,9 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: context.theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: context.theme.colorScheme.onSurface.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,7 +184,7 @@ class _StatCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withAlpha(25), // 0.1 alpha
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: HugeIcon(size: 18.0, icon: icon, color: color),
@@ -194,16 +195,16 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
+            style: context.theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
+            style: context.theme.textTheme.bodySmall?.copyWith(
+              color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
+            ),
           ),
         ],
       ),
@@ -228,20 +229,20 @@ class _TenantCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
+          color: context.theme.cardColor,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           children: [
             CircleAvatar(
               backgroundColor: isActive
-                  ? Colors.amber.withAlpha(25)
-                  : Colors.red.withAlpha(25),
+                  ? context.theme.colorScheme.primary.withValues(alpha: 0.1)
+                  : context.theme.colorScheme.error.withValues(alpha: 0.1),
               radius: 24,
               child: Text(
                 tenant.name.substring(0, 1).toUpperCase(),
                 style: TextStyle(
-                  color: isActive ? Colors.amber : Colors.red,
+                  color: isActive ? context.theme.colorScheme.primary : context.theme.colorScheme.error,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -254,40 +255,36 @@ class _TenantCard extends StatelessWidget {
                 children: [
                   Text(
                     tenant.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+                    style: context.theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const HugeIcon(
+                      HugeIcon(
                         size: 18.0,
                         icon: HugeIcons.strokeRoundedHome01,
-                        color: Colors.white54,
+                        color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Room ${tenant.roomNumber}',
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 13,
+                        style: context.theme.textTheme.bodySmall?.copyWith(
+                          color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const HugeIcon(
+                      HugeIcon(
                         size: 18.0,
                         icon: HugeIcons.strokeRoundedWallet01,
-                        color: Colors.white54,
+                        color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '₹${tenant.rent.toStringAsFixed(0)}/mo',
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 13,
+                        style: context.theme.textTheme.bodySmall?.copyWith(
+                          color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
                         ),
                       ),
                     ],
@@ -299,14 +296,14 @@ class _TenantCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: isActive
-                    ? Colors.green.withAlpha(25)
-                    : Colors.red.withAlpha(25),
+                    ? context.theme.colorScheme.secondary.withValues(alpha: 0.1)
+                    : context.theme.colorScheme.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 isActive ? 'Active' : 'Vacated',
                 style: TextStyle(
-                  color: isActive ? Colors.green : Colors.red,
+                  color: isActive ? context.theme.colorScheme.secondary : context.theme.colorScheme.error,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
