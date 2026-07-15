@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expense_manager/core/service/database_helper.dart';
 import 'package:expense_manager/core/service/i_local_storage_service.dart';
 import 'package:expense_manager/core/service/impl/auth_service_impl.dart';
 import 'package:expense_manager/core/service/impl/local_storage_service.dart';
@@ -14,8 +15,6 @@ import 'package:expense_manager/features/family/presentation/bloc/family_bloc.da
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../../features/expense/data/datasources/local/database_helper.dart';
-import '../../features/expense/expense_di.dart' as expense_di;
 import '../../features/tenant/tenant_di.dart' as tenant_di;
 import '../theme/bloc/theme_bloc.dart';
 
@@ -25,6 +24,7 @@ Future<void> setupLocator() async {
   _initCoreServices();
 
   // Register singletons
+  sl.registerLazySingleton<DatabaseHelper>(() => DatabaseHelper.instance);
   // Register DatabaseHelper with the correct name that matches the import
   sl.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(sl(), sl()),
@@ -41,7 +41,6 @@ Future<void> setupLocator() async {
   sl.registerFactory<FamilyBloc>(
     () => FamilyBloc(familyRepository: sl(), userRepository: sl()),
   );
-  expense_di.registerExpenseModule(sl);
   tenant_di.registerTenantModule(sl);
 
 }
@@ -49,9 +48,6 @@ Future<void> setupLocator() async {
 /// Core services
 void _initCoreServices() {
   sl.registerLazySingleton<ILocalStorageService>(() => LocalStorageService());
-  sl.registerLazySingleton<DatabaseHelper>(
-    () => DatabaseHelper.instance,
-  ); // Alias for DatabaseHelper
   sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   sl.registerLazySingleton<GoogleSignIn>(() => GoogleSignIn.instance);
   sl.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);

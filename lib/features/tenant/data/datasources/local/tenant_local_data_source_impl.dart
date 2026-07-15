@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
-import '../../../../expense/data/datasources/local/database_helper.dart';
+import '../../../../../core/service/database_helper.dart';
 import '../../models/tenant_model.dart';
 import '../../models/tenant_bill_model.dart';
 import '../../models/tenant_payment_model.dart';

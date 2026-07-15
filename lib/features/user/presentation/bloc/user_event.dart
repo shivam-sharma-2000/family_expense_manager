@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:expense_manager/features/user/domain/entities/user_entity.dart';
 
 // Events
 abstract class UserEvent extends Equatable {

@@ -146,10 +146,11 @@ class _GenerateBillScreenState extends State<GenerateBillScreen> {
       if (mounted) context.read<TenantBloc>().add(LoadTenantsEvent());
     }
 
-    if (mounted)
+    if (mounted) {
       context.read<TenantDetailBloc>().add(
         LoadTenantDetailsEvent(tenantId: widget.tenantId),
       );
+    }
 
     if (!mounted) return;
     context.pop();

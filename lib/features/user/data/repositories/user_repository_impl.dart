@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expense_manager/features/expense/data/datasources/local/database_helper.dart';
+import 'package:expense_manager/core/service/database_helper.dart';
 import 'package:expense_manager/features/user/domain/entities/user_entity.dart';
 import 'package:expense_manager/features/user/domain/repositories/user_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';

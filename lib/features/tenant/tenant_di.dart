@@ -31,7 +31,6 @@ void registerTenantModule(GetIt sl) {
     () => TenantRepositoryImpl(
       localDataSource: sl(),
       remoteDataSource: sl(),
-      expenseRepository: sl(),
       localStorageService: sl(),
     ),
   );

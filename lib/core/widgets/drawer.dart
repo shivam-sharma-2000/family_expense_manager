@@ -37,14 +37,7 @@ class HomeDrawer extends StatelessWidget {
                     context.pop();
                   },
                 ),
-                DrawerItem(
-                  icon: HugeIcons.strokeRoundedRadar01,
-                  title: 'Transactions',
-                  onTap: () {
-                    context.push(MyAppRouteConst.transactions);
-                    context.pop();
-                  },
-                ),
+
                 DrawerItem(
                   icon: HugeIcons.strokeRoundedUserGroup,
                   title: 'Tenants',

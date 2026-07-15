@@ -33,7 +33,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           if (user != null) {
             add(UserProfileUpdatedEvent(user));
           } else {
-            add(UserErrorEvent('User not found'));
+            add(const UserErrorEvent('User not found'));
           }
         },
         onError: (error) => add(UserErrorEvent(error.toString())),

@@ -12,8 +12,6 @@ import 'package:expense_manager/features/user/presentation/screens/profile_scree
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/login_screen.dart';
-import '../../features/expense/presentation/screens/add_expense_screen.dart';
-import '../../features/expense/presentation/screens/transaction_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/onboarding/presentation/screens/landing_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -52,13 +50,6 @@ class MyAppRouter {
             const MaterialPage(child: HomeScreen()),
       ),
       GoRoute(
-        name: 'add_expense',
-        path: '${MyAppRouteConst.addExpense}/:type',
-        pageBuilder: (context, state) => MaterialPage(
-          child: AddExpenseScreen(from: state.pathParameters['type'] ?? ''),
-        ),
-      ),
-      GoRoute(
         name: 'login',
         path: MyAppRouteConst.login,
         pageBuilder: (context, state) =>
@@ -95,13 +86,6 @@ class MyAppRouter {
         path: MyAppRouteConst.sync,
         pageBuilder: (context, state) {
           return const MaterialPage(child: SyncPage());
-        },
-      ),
-      GoRoute(
-        name: 'transactions',
-        path: MyAppRouteConst.transactions,
-        pageBuilder: (context, state) {
-          return const MaterialPage(child: TransactionScreen());
         },
       ),
 

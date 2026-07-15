@@ -1,8 +1,5 @@
 import 'package:expense_manager/core/service/i_local_storage_service.dart';
-import 'package:expense_manager/features/expense/domain/entities/expense.dart';
-import 'package:expense_manager/features/expense/domain/repositories/expense_repository.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:uuid/uuid.dart';
 import '../../../../core/errors/failure/failure.dart';
 import '../../domain/entities/tenant_entity.dart';
 import '../../domain/entities/tenant_bill_entity.dart';
@@ -17,13 +14,11 @@ import '../models/tenant_payment_model.dart';
 class TenantRepositoryImpl implements TenantRepository {
   final TenantLocalDataSource localDataSource;
   final TenantRemoteDataSource remoteDataSource;
-  final ExpenseRepository expenseRepository;
   final ILocalStorageService localStorageService;
 
   TenantRepositoryImpl({
     required this.localDataSource,
     required this.remoteDataSource,
-    required this.expenseRepository,
     required this.localStorageService,
   });
 
@@ -89,26 +84,6 @@ class TenantRepositoryImpl implements TenantRepository {
       await localDataSource.addTenantPayment(
         TenantPaymentModel.fromEntity(payment),
       );
-
-      // As per user request, also add this as an Income record in ExpenseManager
-      final tenantStream = localDataSource.getTenants();
-      final tenants = await tenantStream.first;
-      final tenant = tenants.firstWhere((t) => t.id == payment.tenantId);
-
-      final income = Expense(
-        id: const Uuid().v4(),
-        title: 'Rent from ${tenant.name}',
-        amount: payment.amount,
-        date: payment.date,
-        category: 'Rent',
-        userId: payment.userId,
-        familyId: payment.familyId,
-        isSynced: false,
-        isDeleted: false,
-        paymentMethod: payment.mode,
-      );
-
-      await expenseRepository.addExpense(income);
 
       return const Right(null);
     } catch (e) {

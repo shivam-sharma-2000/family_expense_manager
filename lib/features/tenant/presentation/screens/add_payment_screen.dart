@@ -78,10 +78,11 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
     );
     await updateTenantBill(updatedBill);
 
-    if (mounted)
+    if (mounted) {
       context.read<TenantDetailBloc>().add(
         LoadTenantDetailsEvent(tenantId: widget.tenantId),
       );
+    }
 
     if (!mounted) return;
     context.pop();
@@ -139,8 +140,9 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                       if (val == null || val.isEmpty) return 'Required';
                       final amount = double.tryParse(val) ?? 0.0;
                       if (amount <= 0) return 'Enter valid amount';
-                      if (amount > bill.pendingAmount)
+                      if (amount > bill.pendingAmount) {
                         return 'Amount cannot exceed pending due (₹${bill.pendingAmount})';
+                      }
                       return null;
                     },
                   );
