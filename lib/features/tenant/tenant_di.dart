@@ -29,7 +29,6 @@ void registerTenantModule(GetIt sl) {
   // Repository
   sl.registerLazySingleton<TenantRepository>(
     () => TenantRepositoryImpl(
-      localDataSource: sl(),
       remoteDataSource: sl(),
       localStorageService: sl(),
     ),

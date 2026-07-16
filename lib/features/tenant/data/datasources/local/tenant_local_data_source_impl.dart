@@ -29,7 +29,7 @@ class TenantLocalDataSourceImpl implements TenantLocalDataSource {
       where: '${DatabaseHelper.columnIsDeleted} = ?',
       whereArgs: [0],
     );
-    final tenants = maps.map((map) => TenantModel.fromMap(map)).toList();
+    final tenants = maps.map((map) => TenantModel.fromMap(map['id'] as String? ?? '', map)).toList();
     _tenantsController.add(tenants);
   }
 
@@ -71,7 +71,7 @@ class TenantLocalDataSourceImpl implements TenantLocalDataSource {
       where: '${DatabaseHelper.columnIsDeleted} = ?',
       whereArgs: [0],
     );
-    final bills = maps.map((map) => TenantBillModel.fromMap(map)).toList();
+    final bills = maps.map((map) => TenantBillModel.fromMap(map['id'] as String? ?? '', map)).toList();
     _tenantBillsController.add(bills);
   }
 
@@ -102,10 +102,7 @@ class TenantLocalDataSourceImpl implements TenantLocalDataSource {
   Stream<List<TenantBillModel>> getTenantBills(String tenantId) {
     _notifyBillsChanged();
     return _tenantBillsController.stream.map(
-      (bills) => bills.where((b) => b.tenantId == tenantId).toList()..sort((a, b) {
-        if (a.year != b.year) return b.year.compareTo(a.year);
-        return b.month.compareTo(a.month);
-      }),
+      (bills) => bills.where((b) => b.tenantId == tenantId).toList()..sort((a, b) => b.month.compareTo(a.month)),
     );
   }
 
@@ -118,7 +115,7 @@ class TenantLocalDataSourceImpl implements TenantLocalDataSource {
       where: '${DatabaseHelper.columnIsDeleted} = ?',
       whereArgs: [0],
     );
-    final payments = maps.map((map) => TenantPaymentModel.fromMap(map)).toList();
+    final payments = maps.map((map) => TenantPaymentModel.fromMap(map['id'] as String? ?? '', map)).toList();
     _tenantPaymentsController.add(payments);
   }
 
@@ -151,7 +148,7 @@ class TenantLocalDataSourceImpl implements TenantLocalDataSource {
       where: '${DatabaseHelper.columnIsSynced} = ?',
       whereArgs: [0],
     );
-    return maps.map((e) => TenantModel.fromMap(e)).toList();
+    return maps.map((e) => TenantModel.fromMap(e['id'] as String? ?? '', e)).toList();
   }
 
   @override
@@ -162,7 +159,7 @@ class TenantLocalDataSourceImpl implements TenantLocalDataSource {
       where: '${DatabaseHelper.columnIsSynced} = ?',
       whereArgs: [0],
     );
-    return maps.map((e) => TenantBillModel.fromMap(e)).toList();
+    return maps.map((e) => TenantBillModel.fromMap(e['id'] as String? ?? '', e)).toList();
   }
 
   @override
@@ -173,7 +170,7 @@ class TenantLocalDataSourceImpl implements TenantLocalDataSource {
       where: '${DatabaseHelper.columnIsSynced} = ?',
       whereArgs: [0],
     );
-    return maps.map((e) => TenantPaymentModel.fromMap(e)).toList();
+    return maps.map((e) => TenantPaymentModel.fromMap(e['id'] as String? ?? '', e)).toList();
   }
 
   @override

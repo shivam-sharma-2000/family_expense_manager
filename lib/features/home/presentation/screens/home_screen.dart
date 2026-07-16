@@ -1,23 +1,22 @@
-import 'package:expense_manager/core/extensions/theme_extension.dart';
-import 'package:expense_manager/core/widgets/drawer.dart';
-import 'package:expense_manager/features/tenant/domain/entities/tenant_entity.dart';
-import 'package:expense_manager/features/tenant/presentation/bloc/tenant_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
+import 'package:go_router/go_router.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:fpdart/fpdart.dart' as fp;
+import 'package:intl/intl.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/extensions/theme_extension.dart';
 import '../../../../core/routes/my_app_router_const.dart';
-import '../../../../core/theme/bloc/theme_bloc.dart';
-import '../../../../core/theme/bloc/theme_event.dart';
-import '../../../../core/theme/bloc/theme_state.dart';
-import '../../../user/presentation/bloc/user_bloc.dart';
-import '../../../user/presentation/bloc/user_state.dart';
-import '../../../user/presentation/bloc/user_event.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/drawer.dart';
+import '../../../tenant/domain/entities/tenant_entity.dart';
+import '../../../tenant/domain/entities/room_entity.dart';
+import '../../../tenant/domain/entities/tenant_bill_entity.dart';
+import '../../../tenant/domain/repositories/tenant_repository.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -25,227 +24,224 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadInitialData();
-  }
-
-  void _loadInitialData() {
-    context.read<TenantBloc>().add(LoadTenantsEvent());
-    final userBloc = context.read<UserBloc>();
-    if (userBloc.state is UserInitial) {
-      final userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId != null) {
-        userBloc.add(LoadUserEvent(userId));
-      }
-    }
-  }
+  final _repository = sl<TenantRepository>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: Padding(
-            padding: const EdgeInsets.all(8),
-            child: HugeIcon(
-              size: 18.0,
-              icon: HugeIcons.strokeRoundedMenu01,
-              color: context.theme.colorScheme.onSurface,
-            ),
+          icon: const HugeIcon(icon: HugeIcons.strokeRoundedMenu01,),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
+        title: Text(
+          'LEDGERLY',
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w800,
+            fontSize: 22,
           ),
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
         ),
         actions: [
-          BlocBuilder<ThemeBloc, ThemeState>(
-            builder: (context, themeState) {
-              final isDark =
-                  themeState.themeMode == ThemeMode.dark ||
-                  (themeState.themeMode == ThemeMode.system &&
-                      WidgetsBinding
-                              .instance
-                              .platformDispatcher
-                              .platformBrightness ==
-                          Brightness.dark);
-              return IconButton(
-                icon: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: HugeIcon(
-                    size: 18.0,
-                    icon: isDark
-                        ? HugeIcons.strokeRoundedSun01
-                        : HugeIcons.strokeRoundedMoon02,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                onPressed: () {
-                  context.read<ThemeBloc>().add(const ToggleThemeEvent());
-                },
-              );
-            },
-          ),
           IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              child: HugeIcon(
-                size: 18.0,
-                icon: HugeIcons.strokeRoundedNotification01,
-                color: context.theme.colorScheme.onSurface,
-              ),
-            ),
-            onPressed: () {},
+            icon: const HugeIcon(icon: HugeIcons.strokeRoundedSettings01, ),
+            onPressed: () => context.push(MyAppRouteConst.settings),
           ),
         ],
       ),
       drawer: const HomeDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          _loadInitialData();
-          return Future.delayed(const Duration(seconds: 1));
-        },
-        backgroundColor: context.theme.scaffoldBackgroundColor,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Dashboard', style: context.theme.textTheme.headlineSmall),
-                Text(
-                  'Your property at a glance',
-                  style: context.theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 16),
-                BlocBuilder<TenantBloc, TenantState>(
-                  builder: (context, state) {
-                    if (state is TenantLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is TenantError) {
-                      return Center(
-                        child: Text(
-                          'Failed to load tenants: ${state.failure.title}',
-                          style: TextStyle(
-                            color: context.theme.colorScheme.error,
-                          ),
-                        ),
-                      );
-                    } else if (state is TenantLoaded) {
-                      final activeTenants = state.tenants
-                          .where((t) => t.status == TenantStatus.active)
-                          .toList();
-                      final totalRent = activeTenants.fold<double>(
-                        0,
-                        (sum, item) => sum + item.rent,
-                      );
+      body: StreamBuilder(
+        stream: _repository.getTenants(),
+        builder: (context, tenantsSnapshot) {
+          if (tenantsSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: LedgerlyColors.gold));
+          }
 
-                      return Column(
-                        children: [
-                          Row(
-                            children: [
-                              _buildStatCard(
-                                'Active Tenants',
-                                '${activeTenants.length}',
-                                context.theme.colorScheme.primary,
-                                HugeIcons.strokeRoundedUserGroup,
-                              ),
-                              const SizedBox(width: 16),
-                              _buildStatCard(
-                                'Monthly Rent',
-                                totalRent.toStringAsFixed(0),
-                                context.theme.colorScheme.secondary,
-                                HugeIcons.strokeRoundedRupee,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 30),
-                          Row(
-                            children: [
-                              _buildStatCard(
-                                'Occupied Rooms',
-                                '${activeTenants.length}',
-                                context.theme.colorScheme.primary,
-                                HugeIcons.strokeRoundedHouse01,
-                              ),
-                              const SizedBox(width: 16),
-                              _buildStatCard(
-                                'Vacant Rooms',
-                                totalRent.toStringAsFixed(0),
-                                context.theme.colorScheme.secondary,
-                                HugeIcons.strokeRoundedHouse02,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 30),
-                          Row(
-                            children: [
-                              _buildActionCard(
-                                'Add Tenant',
-                                HugeIcons.strokeRoundedUserAdd01,
-                                context.theme.colorScheme.primary,
-                                () =>
-                                    context.push(MyAppRouteConst.addEditTenant),
-                              ),
-                              const SizedBox(width: 16),
-                              _buildActionCard(
-                                'View All Tenants',
-                                HugeIcons.strokeRoundedUserGroup,
-                                context.theme.colorScheme.secondary,
-                                () => context.push(MyAppRouteConst.tenants),
-                              ),
-                            ],
-                          ),
-                        ],
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
+          var tenants = <TenantEntity>[];
+          if (tenantsSnapshot.hasData) {
+            final either = tenantsSnapshot.data as fp.Either<dynamic, List<TenantEntity>>;
+            either.fold((_) {}, (list) => tenants = list);
+          }
+
+          return StreamBuilder(
+            stream: _repository.getRooms(),
+            builder: (context, roomsSnapshot) {
+              var rooms = <RoomEntity>[];
+              if (roomsSnapshot.hasData) {
+                final either = roomsSnapshot.data as fp.Either<dynamic, List<RoomEntity>>;
+                either.fold((_) {}, (list) => rooms = list);
+              }
+
+              return StreamBuilder(
+                stream: _repository.getAllBills(),
+                builder: (context, billsSnapshot) {
+                  var bills = <TenantBillEntity>[];
+                  if (billsSnapshot.hasData) {
+                    final either = billsSnapshot.data as fp.Either<dynamic, List<TenantBillEntity>>;
+                    either.fold((_) {}, (list) => bills = list);
+                  }
+
+                  return _buildDashboard(tenants, rooms, bills);
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }
 
-  Widget _buildStatCard(
-    String title,
-    String amount,
-    Color color,
-    dynamic icon,
-  ) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: context.theme.cardColor,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+  Widget _buildDashboard(List<TenantEntity> tenants, List<RoomEntity> rooms, List<TenantBillEntity> bills) {
+    // 1. Stats Computations
+    final totalTenants = tenants.where((t) => t.status == 'Active').length;
+    final occupiedRooms = rooms.where((r) => r.status == 'Occupied').length;
+    final vacantRooms = rooms.where((r) => r.status == 'Vacant').length;
+
+    // Monthly Rent Collected (this month)
+    final currentMonthStr = DateFormat('yyyy-MM').format(DateTime.now());
+    final monthlyRentCollected = bills
+        .where((b) => b.month == currentMonthStr && b.status == 'Paid')
+        .fold(0.0, (sum, b) => sum + b.rent);
+
+    // Pending Bills count
+    final pendingBills = bills.where((b) => b.status != 'Paid').length;
+
+    // Electricity Charges (total collected or total generated this month)
+    final electricityCharges = bills
+        .where((b) => b.month == currentMonthStr)
+        .fold(0.0, (sum, b) => sum + b.electricity);
+
+    // 2. Reminders & Alerts
+    final now = DateTime.now();
+    final billReminders = bills.where((b) {
+      if (b.status == 'Paid') return false;
+      final diff = b.dueDate.difference(now).inDays;
+      return diff <= 5; // Due within 5 days or overdue
+    }).toList();
+
+    final leaseReminders = tenants.where((t) {
+      if (t.status != 'Active') return false;
+      final diff = t.agreementEndDate.difference(now).inDays;
+      return diff >= 0 && diff <= 30; // Expiring within 30 days
+    }).toList();
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        setState(() {});
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            HugeIcon(size: 20.0, icon: icon, color: color),
+            // Welcome Header
+            Text(
+              'Property Dashboard',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w800,
+                fontSize: 24,
+                color: LedgerlyColors.navy950,
+              ),
+            ),
+            Text(
+              'Real-time overview of your estate ledger',
+              style: GoogleFonts.inter(color: LedgerlyColors.inkSoftLight),
+            ),
+            const SizedBox(height: 24),
+
+            // 6 Stat Cards Grid
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.3,
+              children: [
+                _buildStatCard('Total Tenants', '$totalTenants', LedgerlyColors.gold, HugeIcons.strokeRoundedUserGroup),
+                _buildStatCard('Occupied Rooms', '$occupiedRooms', LedgerlyColors.teal, HugeIcons.strokeRoundedHouse01),
+                _buildStatCard('Vacant Rooms', '$vacantRooms', LedgerlyColors.inkSoftLight, HugeIcons.strokeRoundedHouse02),
+                _buildStatCard('Rent Collected', '₹${monthlyRentCollected.toStringAsFixed(0)}', LedgerlyColors.teal, HugeIcons.strokeRoundedRupee),
+                _buildStatCard('Pending Bills', '$pendingBills', LedgerlyColors.coral, HugeIcons.strokeRoundedInvoice01),
+                _buildStatCard('Elec Charges', '₹${electricityCharges.toStringAsFixed(0)}', LedgerlyColors.amber, HugeIcons.strokeRoundedEnergy),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // Charts Section
+            Text(
+              'Analytics & Trends',
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 18, color: LedgerlyColors.navy950),
+            ),
+            const SizedBox(height: 16),
+            _buildCharts(bills, rooms),
+            const SizedBox(height: 32),
+
+            // Reminders Section
+            Text(
+              'Reminders & Alerts',
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 18, color: LedgerlyColors.navy950),
+            ),
             const SizedBox(height: 12),
-            Text(amount, style: context.theme.textTheme.headlineMedium),
+            _buildReminders(billReminders, leaseReminders),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, Color color, dynamic icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F10233B),
+            blurRadius: 24,
+            offset: Offset(0, 8),
+          ),
+        ],
+        border: Border.all(color: LedgerlyColors.borderLight),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              width: 4,
+              color: color,
+            ),
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              backgroundColor: color.withValues(alpha: 0.1),
+              radius: 16,
+              child: HugeIcon(icon: icon, color: color, size: 16),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: GoogleFonts.jetBrainsMono(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: LedgerlyColors.navy950,
+              ),
+            ),
             Text(
               title,
-              style: context.theme.textTheme.bodyMedium,
-              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: LedgerlyColors.inkSoftLight,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -253,39 +249,191 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionCard(
-    String title,
-    dynamic icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withValues(alpha: 0.3)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              HugeIcon(size: 20.0, icon: icon, color: color),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
+  Widget _buildCharts(List<TenantBillEntity> bills, List<RoomEntity> rooms) {
+    // 1. Rent Collection Bar Chart (last 6 months)
+    final rentMap = <String, double>{};
+    for (var b in bills) {
+      if (b.status == 'Paid') {
+        rentMap[b.month] = (rentMap[b.month] ?? 0.0) + b.rent;
+      }
+    }
+    final sortedMonths = rentMap.keys.toList()..sort();
+    final barData = sortedMonths.skip(sortedMonths.length > 6 ? sortedMonths.length - 6 : 0).map((m) {
+      return _ChartData(m, rentMap[m]!);
+    }).toList();
+
+    // 2. Electricity Usage Line Chart (last 6 months)
+    final elecMap = <String, double>{};
+    for (var b in bills) {
+      elecMap[b.month] = (elecMap[b.month] ?? 0.0) + b.electricityUnits;
+    }
+    final sortedElecMonths = elecMap.keys.toList()..sort();
+    final lineData = sortedElecMonths.skip(sortedElecMonths.length > 6 ? sortedElecMonths.length - 6 : 0).map((m) {
+      return _ChartData(m, elecMap[m]!);
+    }).toList();
+
+    // 3. Occupancy Donut Chart
+    final occupied = rooms.where((r) => r.status == 'Occupied').length.toDouble();
+    final vacant = rooms.where((r) => r.status == 'Vacant').length.toDouble();
+    final donutData = [
+      _PieData('Occupied', occupied, LedgerlyColors.teal),
+      _PieData('Vacant', vacant, LedgerlyColors.inkSoftLight),
+    ];
+
+    return Column(
+      children: [
+        // Rent Bar Chart
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              height: 200,
+              child: SfCartesianChart(
+                title: const ChartTitle(text: 'Monthly Rent Collection (INR)'),
+                primaryXAxis: const CategoryAxis(),
+                series: <CartesianSeries>[
+                  ColumnSeries<_ChartData, String>(
+                    dataSource: barData,
+                    xValueMapper: (_ChartData data, _) => data.x,
+                    yValueMapper: (_ChartData data, _) => data.y,
+                    color: LedgerlyColors.gold,
+                  )
+                ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
+        const SizedBox(height: 16),
+
+        // Electricity Line Chart
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              height: 200,
+              child: SfCartesianChart(
+                title: const ChartTitle(text: 'Electricity Consumption (Units)'),
+                primaryXAxis: const CategoryAxis(),
+                series: <CartesianSeries>[
+                  LineSeries<_ChartData, String>(
+                    dataSource: lineData,
+                    xValueMapper: (_ChartData data, _) => data.x,
+                    yValueMapper: (_ChartData data, _) => data.y,
+                    color: LedgerlyColors.amber,
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Occupancy Donut Chart
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              height: 200,
+              child: SfCircularChart(
+                title: const ChartTitle(text: 'Occupancy Rate'),
+                legend: const Legend(isVisible: true),
+                series: <CircularSeries>[
+                  DoughnutSeries<_PieData, String>(
+                    dataSource: donutData,
+                    xValueMapper: (_PieData data, _) => data.x,
+                    yValueMapper: (_PieData data, _) => data.y,
+                    pointColorMapper: (_PieData data, _) => data.color,
+                    dataLabelSettings: const DataLabelSettings(isVisible: true),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
+
+  Widget _buildReminders(List<TenantBillEntity> bills, List<TenantEntity> tenants) {
+    if (bills.isEmpty && tenants.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(child: Text('No active reminders or warnings.')),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Overdue/Due Soon bills
+        ...bills.map((bill) {
+          final diff = bill.dueDate.difference(DateTime.now()).inDays;
+          final isOverdue = diff < 0;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: isOverdue ? LedgerlyColors.coralSoft : LedgerlyColors.amberSoft,
+                child: HugeIcon(
+                  icon: HugeIcons.strokeRoundedAlert01,
+                  color: isOverdue ? LedgerlyColors.coral : LedgerlyColors.amber,
+                ),
+              ),
+              title: Text('${bill.tenantName} - Room ${bill.roomNumber}'),
+              subtitle: Text(
+                isOverdue ? 'Overdue by ${diff.abs()} days' : 'Due in $diff days',
+                style: TextStyle(
+                  color: isOverdue ? LedgerlyColors.coral : LedgerlyColors.amber,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              trailing: Text(
+                '₹${bill.total.toStringAsFixed(0)}',
+                style: GoogleFonts.jetBrainsMono(fontWeight: FontWeight.bold),
+              ),
+            ),
+          );
+        }),
+
+        // Leases expiring
+        ...tenants.map((tenant) {
+          final diff = tenant.agreementEndDate.difference(DateTime.now()).inDays;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: LedgerlyColors.indigoSoft,
+                child: HugeIcon(
+                  icon: HugeIcons.strokeRoundedAgreement01,
+                  color: LedgerlyColors.indigo,
+                ),
+              ),
+              title: Text('${tenant.name} - Room ${tenant.roomNumber}'),
+              subtitle: Text(
+                'Lease expires in $diff days',
+                style: const TextStyle(
+                  color: LedgerlyColors.indigo,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+}
+
+class _ChartData {
+  final String x;
+  final double y;
+  _ChartData(this.x, this.y);
+}
+
+class _PieData {
+  final String x;
+  final double y;
+  final Color color;
+  _PieData(this.x, this.y, this.color);
 }

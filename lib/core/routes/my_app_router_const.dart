@@ -13,4 +13,9 @@ class MyAppRouteConst {
   static String tenantDetail = "/tenant_detail";
   static String generateBill = "/generate_bill";
   static String addPayment = "/add_payment";
+  static String rooms = "/rooms";
+  static String electricity = "/electricity";
+  static String bills = "/bills";
+  static String reports = "/reports";
+  static String settings = "/settings";
 }

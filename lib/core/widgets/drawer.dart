@@ -46,6 +46,46 @@ class HomeDrawer extends StatelessWidget {
                     context.pop();
                   },
                 ),
+                DrawerItem(
+                  icon: HugeIcons.strokeRoundedHouse01,
+                  title: 'Rooms',
+                  onTap: () {
+                    context.push(MyAppRouteConst.rooms);
+                    context.pop();
+                  },
+                ),
+                DrawerItem(
+                  icon: HugeIcons.strokeRoundedEnergy,
+                  title: 'Electricity',
+                  onTap: () {
+                    context.push(MyAppRouteConst.electricity);
+                    context.pop();
+                  },
+                ),
+                DrawerItem(
+                  icon: HugeIcons.strokeRoundedInvoice01,
+                  title: 'Bills',
+                  onTap: () {
+                    context.push(MyAppRouteConst.bills);
+                    context.pop();
+                  },
+                ),
+                DrawerItem(
+                  icon: HugeIcons.strokeRoundedAnalytics01,
+                  title: 'Reports',
+                  onTap: () {
+                    context.push(MyAppRouteConst.reports);
+                    context.pop();
+                  },
+                ),
+                DrawerItem(
+                  icon: HugeIcons.strokeRoundedSettings01,
+                  title: 'Settings',
+                  onTap: () {
+                    context.push(MyAppRouteConst.settings);
+                    context.pop();
+                  },
+                ),
               ],
             ),
           ),

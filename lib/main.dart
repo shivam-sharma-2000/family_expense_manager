@@ -2,6 +2,7 @@ import 'package:expense_manager/core/di/bloc_provider.dart';
 import 'package:expense_manager/core/di/injection_container.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/routes/my_app_router.dart';
@@ -14,6 +15,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   setupLocator();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+  );
   await FirebaseAppCheck.instance.activate(
     providerAndroid: const AndroidPlayIntegrityProvider(),
   );

@@ -1,119 +1,120 @@
 import 'package:equatable/equatable.dart';
 
-enum TenantStatus { active, vacated }
-
 class TenantEntity extends Equatable {
   final String id;
+  final String propertyId;
+  final String tenantCode; // TNT-0001
   final String name;
-  final String mobile;
-  final String? aadhaar;
-  final int familyMembers;
+  final String phone;
+  final String email;
+  final String idNumber; // Aadhaar/ID
   final String roomNumber;
-  final String? photoPath;
+  final String floor;
   final double rent;
-  final double maintenance;
-  final double advance;
-  final DateTime rentStartDate;
-  final int rentDueDate;
-  final TenantStatus status;
-  final String? meterNumber;
-  final double previousReading;
-  final double unitRate;
-  final String userId;
-  final String familyId;
-  final bool isSynced;
-  final bool isDeleted;
+  final double deposit;
+  final DateTime joiningDate;
+  final DateTime agreementEndDate;
+  final String status; // Active | Vacated
+  final String photoUrl;
+  final String notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String userId; // Maintain user id for auth checks
 
   const TenantEntity({
     required this.id,
+    required this.propertyId,
+    required this.tenantCode,
     required this.name,
-    required this.mobile,
-    this.aadhaar,
-    required this.familyMembers,
+    required this.phone,
+    required this.email,
+    required this.idNumber,
     required this.roomNumber,
-    this.photoPath,
+    required this.floor,
     required this.rent,
-    required this.maintenance,
-    required this.advance,
-    required this.rentStartDate,
-    required this.rentDueDate,
+    required this.deposit,
+    required this.joiningDate,
+    required this.agreementEndDate,
     required this.status,
-    this.meterNumber,
-    required this.previousReading,
-    required this.unitRate,
+    required this.photoUrl,
+    required this.notes,
+    required this.createdAt,
+    required this.updatedAt,
     required this.userId,
-    required this.familyId,
-    this.isSynced = false,
-    this.isDeleted = false,
   });
+
+  // Getter compatibility with previous mobile/aadhaar/photoPath/advance/rentStartDate/familyId properties
+  String get mobile => phone;
+  String get aadhaar => idNumber;
+  String? get photoPath => photoUrl.isEmpty ? null : photoUrl;
+  double get advance => deposit;
+  DateTime get rentStartDate => joiningDate;
+  String get familyId => propertyId;
 
   @override
   List<Object?> get props => [
-    id,
-    name,
-    mobile,
-    aadhaar,
-    familyMembers,
-    roomNumber,
-    photoPath,
-    rent,
-    maintenance,
-    advance,
-    rentStartDate,
-    rentDueDate,
-    status,
-    meterNumber,
-    previousReading,
-    unitRate,
-    userId,
-    familyId,
-    isSynced,
-    isDeleted,
-  ];
+        id,
+        propertyId,
+        tenantCode,
+        name,
+        phone,
+        email,
+        idNumber,
+        roomNumber,
+        floor,
+        rent,
+        deposit,
+        joiningDate,
+        agreementEndDate,
+        status,
+        photoUrl,
+        notes,
+        createdAt,
+        updatedAt,
+        userId,
+      ];
 
   TenantEntity copyWith({
     String? id,
+    String? propertyId,
+    String? tenantCode,
     String? name,
-    String? mobile,
-    String? aadhaar,
-    int? familyMembers,
+    String? phone,
+    String? email,
+    String? idNumber,
     String? roomNumber,
-    String? photoPath,
+    String? floor,
     double? rent,
-    double? maintenance,
-    double? advance,
-    DateTime? rentStartDate,
-    int? rentDueDate,
-    TenantStatus? status,
-    String? meterNumber,
-    double? previousReading,
-    double? unitRate,
+    double? deposit,
+    DateTime? joiningDate,
+    DateTime? agreementEndDate,
+    String? status,
+    String? photoUrl,
+    String? notes,
+    DateTime? createdAt,
+    DateTime? updatedAt,
     String? userId,
-    String? familyId,
-    bool? isSynced,
-    bool? isDeleted,
   }) {
     return TenantEntity(
       id: id ?? this.id,
+      propertyId: propertyId ?? this.propertyId,
+      tenantCode: tenantCode ?? this.tenantCode,
       name: name ?? this.name,
-      mobile: mobile ?? this.mobile,
-      aadhaar: aadhaar ?? this.aadhaar,
-      familyMembers: familyMembers ?? this.familyMembers,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      idNumber: idNumber ?? this.idNumber,
       roomNumber: roomNumber ?? this.roomNumber,
-      photoPath: photoPath ?? this.photoPath,
+      floor: floor ?? this.floor,
       rent: rent ?? this.rent,
-      maintenance: maintenance ?? this.maintenance,
-      advance: advance ?? this.advance,
-      rentStartDate: rentStartDate ?? this.rentStartDate,
-      rentDueDate: rentDueDate ?? this.rentDueDate,
+      deposit: deposit ?? this.deposit,
+      joiningDate: joiningDate ?? this.joiningDate,
+      agreementEndDate: agreementEndDate ?? this.agreementEndDate,
       status: status ?? this.status,
-      meterNumber: meterNumber ?? this.meterNumber,
-      previousReading: previousReading ?? this.previousReading,
-      unitRate: unitRate ?? this.unitRate,
+      photoUrl: photoUrl ?? this.photoUrl,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       userId: userId ?? this.userId,
-      familyId: familyId ?? this.familyId,
-      isSynced: isSynced ?? this.isSynced,
-      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 }

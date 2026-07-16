@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/extensions/theme_extension.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/tenant_payment_entity.dart';
-import '../../domain/usecases/add_tenant_payment.dart';
-import '../../domain/usecases/update_tenant_bill.dart';
+import '../../domain/repositories/tenant_repository.dart';
 import '../bloc/tenant_bloc.dart';
 import '../bloc/tenant_detail_bloc.dart';
 
@@ -29,12 +30,21 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _modeController = TextEditingController(text: 'Cash');
-  final _referenceController = TextEditingController();
+  final _transactionIdController = TextEditingController();
+  final _repository = sl<TenantRepository>();
 
   DateTime _paymentDate = DateTime.now();
   bool _isLoading = false;
 
-  final List<String> _modes = ['Cash', 'UPI', 'Bank Transfer', 'Cheque'];
+  final List<String> _modes = ['Cash', 'UPI', 'Bank Transfer'];
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _modeController.dispose();
+    _transactionIdController.dispose();
+    super.dispose();
+  }
 
   Future<void> _addPayment() async {
     if (!_formKey.currentState!.validate()) return;
@@ -49,43 +59,26 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
 
     final payment = TenantPaymentEntity(
       id: const Uuid().v4(),
-      tenantId: widget.tenantId,
+      propertyId: tenant.propertyId,
       billId: widget.billId,
+      tenantId: widget.tenantId,
       amount: double.tryParse(_amountController.text) ?? 0.0,
       date: _paymentDate,
-      mode: _modeController.text,
-      notes: _referenceController.text.trim().isEmpty
-          ? null
-          : _referenceController.text.trim(),
+      method: _modeController.text,
+      transactionId: _transactionIdController.text.trim(),
+      createdAt: DateTime.now(),
       userId: tenant.userId,
-      familyId: tenant.familyId,
-      isSynced: false,
-      isDeleted: false,
     );
 
-    final addTenantPayment = sl<AddTenantPayment>();
-    await addTenantPayment(payment);
-
-    // Update bill
-    final detailState = context.read<TenantDetailBloc>().state;
-    final bill = detailState.bills.firstWhere((b) => b.id == widget.billId);
-
-    final updateTenantBill = sl<UpdateTenantBill>();
-    final updatedBill = bill.copyWith(
-      paidAmount: bill.paidAmount + payment.amount,
-      pendingAmount: bill.pendingAmount - payment.amount,
-      isSynced: false,
-    );
-    await updateTenantBill(updatedBill);
+    // Save payment (automatically recalculates bill status & dues in Firestore transaction)
+    await _repository.addTenantPayment(payment);
 
     if (mounted) {
       context.read<TenantDetailBloc>().add(
         LoadTenantDetailsEvent(tenantId: widget.tenantId),
       );
+      context.pop();
     }
-
-    if (!mounted) return;
-    context.pop();
   }
 
   @override
@@ -93,35 +86,23 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
     return Scaffold(
       backgroundColor: context.theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          'Add Payment',
-          style: context.theme.textTheme.headlineMedium,
-        ),
-        leading: IconButton(
-          icon: HugeIcon(
-            icon: HugeIcons.strokeRoundedArrowLeft01,
-            color: context.theme.colorScheme.onSurface,
-          ),
-          onPressed: () => context.pop(),
-        ),
+        title: const Text('Record Payment'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Payment Details',
-                style: TextStyle(
-                  color: context.theme.colorScheme.primary,
-                  fontSize: 18,
+                'Enter Transaction Details',
+                style: GoogleFonts.plusJakartaSans(
                   fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: LedgerlyColors.gold,
                 ),
               ),
-
               const SizedBox(height: 16),
               BlocBuilder<TenantDetailBloc, TenantDetailState>(
                 builder: (context, detailState) {
@@ -129,147 +110,59 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
                     (b) => b.id == widget.billId,
                   );
 
-                  return _buildTextField(
-                    controller: _amountController,
-                    label: 'Amount (Max: ₹${bill.pendingAmount})',
-                    icon: HugeIcons.strokeRoundedMoney04,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) return 'Required';
-                      final amount = double.tryParse(val) ?? 0.0;
-                      if (amount <= 0) return 'Enter valid amount';
-                      if (amount > bill.pendingAmount) {
-                        return 'Amount cannot exceed pending due (₹${bill.pendingAmount})';
-                      }
-                      return null;
-                    },
-                  );
-                },
-              ),
-
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: DropdownButtonFormField<String>(
-                  initialValue: _modeController.text,
-                  dropdownColor: context.theme.cardColor,
-                  style: TextStyle(color: context.theme.colorScheme.onSurface),
-                  decoration: InputDecoration(
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: HugeIcon(
-                        icon: HugeIcons.strokeRoundedWallet01,
-                        color: context.theme.colorScheme.onSurface.withValues(
-                          alpha: 0.54,
-                        ),
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: context.theme.cardColor,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  items: _modes
-                      .map(
-                        (mode) =>
-                            DropdownMenuItem(value: mode, child: Text(mode)),
-                      )
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _modeController.text = val);
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _referenceController,
-                label: 'Reference Number (Optional)',
-                icon: HugeIcons.strokeRoundedNote01,
-              ),
-
-
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: _paymentDate,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                    builder: (context, child) {
-                      return Theme(
-                        data: Theme.of(
-                          context,
-                        ).copyWith(colorScheme: context.theme.colorScheme),
-                        child: child!,
-                      );
-                    },
-                  );
-                  if (date != null) setState(() => _paymentDate = date);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.theme.cardColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
+                  return Column(
                     children: [
-                      HugeIcon(
-                        icon: HugeIcons.strokeRoundedCalendar01,
-                        color: context.theme.colorScheme.onSurface.withValues(
-                          alpha: 0.54,
+                      TextFormField(
+                        controller: _amountController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: InputDecoration(
+                          labelText: 'Payment Amount (Max: ₹${bill.total.toStringAsFixed(0)})',
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          '${_paymentDate.day}/${_paymentDate.month}/${_paymentDate.year}',
-                          style: TextStyle(
-                            color: context.theme.colorScheme.onSurface,
-                            fontSize: 16,
-                          ),
-                        ),
+                        validator: (val) {
+                          if (val == null || val.isEmpty) return 'Required';
+                          final amt = double.tryParse(val);
+                          if (amt == null || amt <= 0) return 'Enter valid positive amount';
+                          if (amt > bill.total) return 'Cannot exceed outstanding balance';
+                          return null;
+                        },
                       ),
                     ],
-                  ),
-                ),
+                  );
+                },
               ),
-
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _modeController.text,
+                dropdownColor: context.theme.cardColor,
+                decoration: const InputDecoration(labelText: 'Payment Method'),
+                items: _modes.map((mode) => DropdownMenuItem(value: mode, child: Text(mode))).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _modeController.text = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _transactionIdController,
+                decoration: const InputDecoration(labelText: 'Transaction / Reference ID'),
+                validator: (val) => (val == null || val.isEmpty) ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              _buildDatePicker(),
               const SizedBox(height: 32),
+
               _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: context.theme.colorScheme.primary,
-                      ),
-                    )
+                  ? const Center(child: CircularProgressIndicator(color: LedgerlyColors.gold))
                   : SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: context.theme.colorScheme.primary,
-                          foregroundColor: context.theme.colorScheme.onPrimary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          backgroundColor: LedgerlyColors.gold,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: _addPayment,
-                        child: const Text(
-                          'Record Payment',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: const Text('Record Payment', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
             ],
@@ -279,48 +172,28 @@ class _AddPaymentScreenState extends State<AddPaymentScreen> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required dynamic icon,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: TextStyle(color: context.theme.colorScheme.onSurface),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(
-            color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
-          ),
-          prefixIcon: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: HugeIcon(
-              icon: icon,
-              color: context.theme.colorScheme.onSurface.withValues(alpha: 0.54),
-            ),
-          ),
-          filled: true,
-          fillColor: context.theme.cardColor,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: context.theme.colorScheme.primary),
-          ),
+  Widget _buildDatePicker() {
+    return InkWell(
+      onTap: () async {
+        final date = await showDatePicker(
+          context: context,
+          initialDate: _paymentDate,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (date != null) {
+          setState(() => _paymentDate = date);
+        }
+      },
+      child: InputDecorator(
+        decoration: const InputDecoration(labelText: 'Transaction Date'),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('${_paymentDate.day}/${_paymentDate.month}/${_paymentDate.year}'),
+            const Icon(Icons.calendar_today, size: 18, color: LedgerlyColors.inkSoftLight),
+          ],
         ),
-        validator:
-            validator ??
-            (val) {
-              if (label.contains('Optional')) return null;
-              return (val == null || val.isEmpty) ? 'Required' : null;
-            },
       ),
     );
   }

@@ -6,6 +6,11 @@ import 'package:expense_manager/features/tenant/presentation/screens/add_edit_te
 import 'package:expense_manager/features/tenant/presentation/screens/tenant_detail_screen.dart';
 import 'package:expense_manager/features/tenant/presentation/screens/generate_bill_screen.dart';
 import 'package:expense_manager/features/tenant/presentation/screens/add_payment_screen.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/rooms_screen.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/electricity_screen.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/bills_list_screen.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/reports_screen.dart';
+import 'package:expense_manager/features/tenant/presentation/screens/settings_screen.dart';
 import 'package:expense_manager/features/user/domain/entities/user_entity.dart';
 import 'package:expense_manager/features/user/presentation/screens/edit_profile_screen.dart';
 import 'package:expense_manager/features/user/presentation/screens/profile_screen.dart';
@@ -131,6 +136,31 @@ class MyAppRouter {
           final billId = state.extra as String? ?? '';
           return MaterialPage(child: AddPaymentScreen(tenantId: state.pathParameters['id']!, billId: billId));
         },
+      ),
+      GoRoute(
+        name: 'rooms',
+        path: MyAppRouteConst.rooms,
+        pageBuilder: (context, state) => const MaterialPage(child: RoomsScreen()),
+      ),
+      GoRoute(
+        name: 'electricity',
+        path: MyAppRouteConst.electricity,
+        pageBuilder: (context, state) => const MaterialPage(child: ElectricityScreen()),
+      ),
+      GoRoute(
+        name: 'bills',
+        path: MyAppRouteConst.bills,
+        pageBuilder: (context, state) => const MaterialPage(child: BillsListScreen()),
+      ),
+      GoRoute(
+        name: 'reports',
+        path: MyAppRouteConst.reports,
+        pageBuilder: (context, state) => const MaterialPage(child: ReportsScreen()),
+      ),
+      GoRoute(
+        name: 'settings',
+        path: MyAppRouteConst.settings,
+        pageBuilder: (context, state) => const MaterialPage(child: SettingsScreen()),
       ),
     ],
   );
