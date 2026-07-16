@@ -161,9 +161,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintStyle: GoogleFonts.poppins(
                           color: const Color(0xFF94A3B8),
                         ),
-                        prefixIcon: const HugeIcon(size: 18.0,  
-                          icon: HugeIcons.strokeRoundedMail01,
-                          color: Color(0xFF94A3B8),
+                        prefixIcon: const Padding(
+                          padding: EdgeInsetsGeometry.all(10),
+                          child: HugeIcon(
+                            icon: HugeIcons.strokeRoundedMail01,
+                            color: Color(0xFF94A3B8),
+                          ),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -213,12 +216,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintStyle: GoogleFonts.poppins(
                           color: const Color(0xFF94A3B8),
                         ),
-                        prefixIcon: const HugeIcon(size: 18.0,  
-                          icon: HugeIcons.strokeRoundedLockPassword,
-                          color: Color(0xFF94A3B8),
+                        prefixIcon: const Padding(
+                          padding: EdgeInsetsGeometry.all(10),
+                          child: HugeIcon(
+                            icon: HugeIcons.strokeRoundedLockPassword,
+                            color: Color(0xFF94A3B8),
+                          ),
                         ),
                         suffixIcon: IconButton(
-                          icon: HugeIcon(size: 18.0,  
+                          icon: HugeIcon(
+                            size: 18.0,
                             icon: _isPasswordVisible
                                 ? HugeIcons.strokeRoundedViewOff
                                 : HugeIcons.strokeRoundedView,
@@ -423,8 +430,11 @@ class _LoginScreenState extends State<LoginScreen> {
           icon,
           width: 24,
           height: 24,
-          errorBuilder: (context, error, stackTrace) =>
-              const HugeIcon(size: 18.0,  icon: HugeIcons.strokeRoundedAlert02, color: Colors.grey),
+          errorBuilder: (context, error, stackTrace) => const HugeIcon(
+            size: 18.0,
+            icon: HugeIcons.strokeRoundedAlert02,
+            color: Colors.grey,
+          ),
         ),
       ),
     );

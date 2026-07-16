@@ -66,16 +66,22 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           BlocBuilder<ThemeBloc, ThemeState>(
             builder: (context, themeState) {
-              final isDark = themeState.themeMode == ThemeMode.dark ||
+              final isDark =
+                  themeState.themeMode == ThemeMode.dark ||
                   (themeState.themeMode == ThemeMode.system &&
-                      WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+                      WidgetsBinding
+                              .instance
+                              .platformDispatcher
+                              .platformBrightness ==
                           Brightness.dark);
               return IconButton(
                 icon: Padding(
                   padding: const EdgeInsets.all(8),
                   child: HugeIcon(
                     size: 18.0,
-                    icon: isDark ? HugeIcons.strokeRoundedSun01 : HugeIcons.strokeRoundedMoon02,
+                    icon: isDark
+                        ? HugeIcons.strokeRoundedSun01
+                        : HugeIcons.strokeRoundedMoon02,
                     color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
@@ -112,29 +118,10 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                BlocBuilder<UserBloc, UserState>(
-                  builder: (context, userState) {
-                    final userName = userState is UserLoaded ? userState.user.name : 'User';
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Welcome back',
-                          style: context.theme.textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          userName,
-                          style: context.theme.textTheme.headlineMedium,
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 30),
+                Text('Dashboard', style: context.theme.textTheme.headlineSmall),
                 Text(
-                  'Tenant Dashboard',
-                  style: context.theme.textTheme.headlineSmall,
+                  'Your property at a glance',
+                  style: context.theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 16),
                 BlocBuilder<TenantBloc, TenantState>(
@@ -145,12 +132,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Center(
                         child: Text(
                           'Failed to load tenants: ${state.failure.title}',
-                          style: TextStyle(color: context.theme.colorScheme.error),
+                          style: TextStyle(
+                            color: context.theme.colorScheme.error,
+                          ),
                         ),
                       );
                     } else if (state is TenantLoaded) {
-                      final activeTenants = state.tenants.where((t) => t.status == TenantStatus.active).toList();
-                      final totalRent = activeTenants.fold<double>(0, (sum, item) => sum + item.rent);
+                      final activeTenants = state.tenants
+                          .where((t) => t.status == TenantStatus.active)
+                          .toList();
+                      final totalRent = activeTenants.fold<double>(
+                        0,
+                        (sum, item) => sum + item.rent,
+                      );
 
                       return Column(
                         children: [
@@ -165,9 +159,27 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(width: 16),
                               _buildStatCard(
                                 'Monthly Rent',
-                                '₹${totalRent.toStringAsFixed(0)}',
+                                totalRent.toStringAsFixed(0),
                                 context.theme.colorScheme.secondary,
-                                HugeIcons.strokeRoundedWallet01,
+                                HugeIcons.strokeRoundedRupee,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 30),
+                          Row(
+                            children: [
+                              _buildStatCard(
+                                'Occupied Rooms',
+                                '${activeTenants.length}',
+                                context.theme.colorScheme.primary,
+                                HugeIcons.strokeRoundedHouse01,
+                              ),
+                              const SizedBox(width: 16),
+                              _buildStatCard(
+                                'Vacant Rooms',
+                                totalRent.toStringAsFixed(0),
+                                context.theme.colorScheme.secondary,
+                                HugeIcons.strokeRoundedHouse02,
                               ),
                             ],
                           ),
@@ -178,12 +190,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 'Add Tenant',
                                 HugeIcons.strokeRoundedUserAdd01,
                                 context.theme.colorScheme.primary,
-                                () => context.push(MyAppRouteConst.addEditTenant),
+                                () =>
+                                    context.push(MyAppRouteConst.addEditTenant),
                               ),
                               const SizedBox(width: 16),
                               _buildActionCard(
                                 'View All Tenants',
-                                HugeIcons.strokeRoundedListView,
+                                HugeIcons.strokeRoundedUserGroup,
                                 context.theme.colorScheme.secondary,
                                 () => context.push(MyAppRouteConst.tenants),
                               ),
@@ -203,7 +216,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String amount, Color color, dynamic icon) {
+  Widget _buildStatCard(
+    String title,
+    String amount,
+    Color color,
+    dynamic icon,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -219,16 +237,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            HugeIcon(size: 24.0, icon: icon, color: color),
+            HugeIcon(size: 20.0, icon: icon, color: color),
             const SizedBox(height: 12),
-            Text(title, style: context.theme.textTheme.bodyMedium, textAlign: TextAlign.center),
-            const SizedBox(height: 8),
+            Text(amount, style: context.theme.textTheme.headlineMedium),
             Text(
-              amount,
-              style: context.theme.textTheme.headlineMedium?.copyWith(
-                color: color,
-              ),
+              title,
+              style: context.theme.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -236,7 +253,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionCard(String title, dynamic icon, Color color, VoidCallback onTap) {
+  Widget _buildActionCard(
+    String title,
+    dynamic icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -250,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              HugeIcon(size: 32.0, icon: icon, color: color),
+              HugeIcon(size: 20.0, icon: icon, color: color),
               const SizedBox(height: 12),
               Text(
                 title,
