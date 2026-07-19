@@ -12,8 +12,8 @@ import 'core/theme/bloc/theme_state.dart';
 import 'firebase_options.dart';
 
 void main() async {
+  // Firebase Initialization
   WidgetsFlutterBinding.ensureInitialized();
-  setupLocator();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
@@ -22,6 +22,9 @@ void main() async {
   await FirebaseAppCheck.instance.activate(
     providerAndroid: const AndroidPlayIntegrityProvider(),
   );
+
+  // Dependencies Injection
+  initDependencies();
 
   runApp(const MyApp());
 }
@@ -39,7 +42,6 @@ class MyApp extends StatelessWidget {
         builder: (context, themeState) {
           return MaterialApp.router(
             debugShowCheckedModeBanner: false,
-            title: 'Expense Manager',
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeState.themeMode,

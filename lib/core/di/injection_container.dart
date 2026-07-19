@@ -20,7 +20,7 @@ import '../theme/bloc/theme_bloc.dart';
 
 final sl = GetIt.instance;
 
-Future<void> setupLocator() async {
+Future<void> initDependencies() async {
   _initCoreServices();
 
   // Register singletons
@@ -42,7 +42,6 @@ Future<void> setupLocator() async {
     () => FamilyBloc(familyRepository: sl(), userRepository: sl()),
   );
   tenant_di.registerTenantModule(sl);
-
 }
 
 /// Core services

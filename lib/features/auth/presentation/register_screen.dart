@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
+import '../../../core/extensions/theme_extension.dart';
 import '../../../core/routes/my_app_router_const.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../core/service/i_local_storage_service.dart';
@@ -529,8 +530,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _handleRegistration,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2563EB),
-                            foregroundColor: Colors.white,
+                            backgroundColor: context.theme.colorScheme.primary,
+                            foregroundColor: context.theme.colorScheme.primary,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -548,10 +549,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 )
                               : Text(
                                   'Create Account',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: context.theme.textTheme.headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color:
+                                            context.theme.colorScheme.onPrimary,
+                                      ),
                                 ),
                         ),
                       );
@@ -582,7 +585,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             TextSpan(
                               text: 'Sign In',
                               style: GoogleFonts.poppins(
-                                color: const Color(0xFF2563EB),
+                                color: context.theme.colorScheme.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

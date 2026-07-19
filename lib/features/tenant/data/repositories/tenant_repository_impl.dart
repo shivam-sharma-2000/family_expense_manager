@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_manager/core/service/i_local_storage_service.dart';
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/errors/failure/failure.dart';
@@ -25,6 +26,25 @@ class TenantRepositoryImpl implements TenantRepository {
     required this.localStorageService,
   });
 
+  // Lazy fail-safe property ID resolver
+  Future<String> _getOrResolvePropertyId() async {
+    String pId = await localStorageService.familyId ?? '';
+    if (pId.isEmpty) {
+      final uid = await localStorageService.userId ?? '';
+      if (uid.isNotEmpty) {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        if (doc.exists && doc.data() != null) {
+          final data = doc.data()!;
+          pId = data['familyId'] as String? ?? '';
+          if (pId.isNotEmpty) {
+            await localStorageService.setFamilyId(pId);
+          }
+        }
+      }
+    }
+    return pId;
+  }
+
   // Properties
   @override
   Stream<Either<Failure, PropertyEntity?>> getProperty(String propertyId) {
@@ -34,7 +54,9 @@ class TenantRepositoryImpl implements TenantRepository {
   @override
   Future<Either<Failure, void>> updateProperty(PropertyEntity property) async {
     try {
-      await remoteDataSource.updateProperty(PropertyModel.fromEntity(property));
+      final pId = await _getOrResolvePropertyId();
+      final resolvedProp = property.id.isEmpty ? property.copyWith(id: pId) : property;
+      await remoteDataSource.updateProperty(PropertyModel.fromEntity(resolvedProp));
       return const Right(null);
     } catch (e) {
       return const Left(UnexpectedFailure(description: 'Failed to update property details'));
@@ -45,7 +67,9 @@ class TenantRepositoryImpl implements TenantRepository {
   @override
   Future<Either<Failure, void>> addTenant(TenantEntity tenant) async {
     try {
-      await remoteDataSource.addTenant(TenantModel.fromEntity(tenant));
+      final pId = await _getOrResolvePropertyId();
+      final resolvedTenant = tenant.propertyId.isEmpty ? tenant.copyWith(propertyId: pId) : tenant;
+      await remoteDataSource.addTenant(TenantModel.fromEntity(resolvedTenant));
       return const Right(null);
     } catch (e) {
       return const Left(UnexpectedFailure(description: 'Failed to add tenant'));
@@ -55,7 +79,9 @@ class TenantRepositoryImpl implements TenantRepository {
   @override
   Future<Either<Failure, void>> updateTenant(TenantEntity tenant) async {
     try {
-      await remoteDataSource.updateTenant(TenantModel.fromEntity(tenant));
+      final pId = await _getOrResolvePropertyId();
+      final resolvedTenant = tenant.propertyId.isEmpty ? tenant.copyWith(propertyId: pId) : tenant;
+      await remoteDataSource.updateTenant(TenantModel.fromEntity(resolvedTenant));
       return const Right(null);
     } catch (e) {
       return const Left(UnexpectedFailure(description: 'Failed to update tenant'));
@@ -74,21 +100,23 @@ class TenantRepositoryImpl implements TenantRepository {
 
   @override
   Stream<Either<Failure, List<TenantEntity>>> getTenants() async* {
-    final propertyId = await localStorageService.familyId ?? '';
+    final propertyId = await _getOrResolvePropertyId();
     yield* remoteDataSource.getTenantsStream(propertyId).map((models) => Right(models));
   }
 
   // Rooms
   @override
   Stream<Either<Failure, List<RoomEntity>>> getRooms() async* {
-    final propertyId = await localStorageService.familyId ?? '';
+    final propertyId = await _getOrResolvePropertyId();
     yield* remoteDataSource.getRoomsStream(propertyId).map((models) => Right(models));
   }
 
   @override
   Future<Either<Failure, void>> addRoom(RoomEntity room) async {
     try {
-      await remoteDataSource.addRoom(RoomModel.fromEntity(room));
+      final pId = await _getOrResolvePropertyId();
+      final resolvedRoom = room.propertyId.isEmpty ? room.copyWith(propertyId: pId) : room;
+      await remoteDataSource.addRoom(RoomModel.fromEntity(resolvedRoom));
       return const Right(null);
     } catch (e) {
       return const Left(UnexpectedFailure(description: 'Failed to add room'));
@@ -98,7 +126,9 @@ class TenantRepositoryImpl implements TenantRepository {
   @override
   Future<Either<Failure, void>> updateRoom(RoomEntity room) async {
     try {
-      await remoteDataSource.updateRoom(RoomModel.fromEntity(room));
+      final pId = await _getOrResolvePropertyId();
+      final resolvedRoom = room.propertyId.isEmpty ? room.copyWith(propertyId: pId) : room;
+      await remoteDataSource.updateRoom(RoomModel.fromEntity(resolvedRoom));
       return const Right(null);
     } catch (e) {
       return const Left(UnexpectedFailure(description: 'Failed to update room'));
@@ -108,7 +138,6 @@ class TenantRepositoryImpl implements TenantRepository {
   @override
   Future<Either<Failure, void>> deleteRoom(String roomId) async {
     try {
-      // Check if room occupied
       await remoteDataSource.deleteRoom(roomId);
       return const Right(null);
     } catch (e) {
@@ -119,7 +148,7 @@ class TenantRepositoryImpl implements TenantRepository {
   // Electricity Readings
   @override
   Stream<Either<Failure, List<ElectricityReadingEntity>>> getElectricityReadings() async* {
-    final propertyId = await localStorageService.familyId ?? '';
+    final propertyId = await _getOrResolvePropertyId();
     yield* remoteDataSource.getElectricityReadingsStream(propertyId).map((models) => Right(models));
   }
 
@@ -137,7 +166,9 @@ class TenantRepositoryImpl implements TenantRepository {
   @override
   Future<Either<Failure, void>> addTenantBill(TenantBillEntity bill) async {
     try {
-      await remoteDataSource.addBill(TenantBillModel.fromEntity(bill));
+      final pId = await _getOrResolvePropertyId();
+      final resolvedBill = bill.propertyId.isEmpty ? bill.copyWith(propertyId: pId) : bill;
+      await remoteDataSource.addBill(TenantBillModel.fromEntity(resolvedBill));
       return const Right(null);
     } catch (e) {
       return const Left(UnexpectedFailure(description: 'Failed to generate bill'));
@@ -147,7 +178,9 @@ class TenantRepositoryImpl implements TenantRepository {
   @override
   Future<Either<Failure, void>> updateTenantBill(TenantBillEntity bill) async {
     try {
-      await remoteDataSource.updateBill(TenantBillModel.fromEntity(bill));
+      final pId = await _getOrResolvePropertyId();
+      final resolvedBill = bill.propertyId.isEmpty ? bill.copyWith(propertyId: pId) : bill;
+      await remoteDataSource.updateBill(TenantBillModel.fromEntity(resolvedBill));
       return const Right(null);
     } catch (e) {
       return const Left(UnexpectedFailure(description: 'Failed to update bill'));
@@ -171,7 +204,7 @@ class TenantRepositoryImpl implements TenantRepository {
 
   @override
   Stream<Either<Failure, List<TenantBillEntity>>> getAllBills() async* {
-    final propertyId = await localStorageService.familyId ?? '';
+    final propertyId = await _getOrResolvePropertyId();
     yield* remoteDataSource.getBillsStream(propertyId).map((models) => Right(models));
   }
 
@@ -179,7 +212,9 @@ class TenantRepositoryImpl implements TenantRepository {
   @override
   Future<Either<Failure, void>> addTenantPayment(TenantPaymentEntity payment) async {
     try {
-      await remoteDataSource.addPayment(TenantPaymentModel.fromEntity(payment));
+      final pId = await _getOrResolvePropertyId();
+      final resolvedPayment = payment.propertyId.isEmpty ? payment.copyWith(propertyId: pId) : payment;
+      await remoteDataSource.addPayment(TenantPaymentModel.fromEntity(resolvedPayment));
       return const Right(null);
     } catch (e) {
       return const Left(UnexpectedFailure(description: 'Failed to record payment'));
@@ -193,7 +228,7 @@ class TenantRepositoryImpl implements TenantRepository {
 
   @override
   Stream<Either<Failure, List<TenantPaymentEntity>>> getAllPayments() async* {
-    final propertyId = await localStorageService.familyId ?? '';
+    final propertyId = await _getOrResolvePropertyId();
     yield* remoteDataSource.getPaymentsStream(propertyId).map((models) => Right(models));
   }
 

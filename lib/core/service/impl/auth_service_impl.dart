@@ -100,8 +100,12 @@ final class AuthServiceImpl implements AuthService {
         _authStateNotifier.value = UserRole.authenticated;
         _localStorageService.setUserRole(UserRole.authenticated);
         if (_user != null) {
-          _localStorageService.setUserId(_user!.uid);
-          _localStorageService.setUserName(_user!.displayName ?? '');
+          await _localStorageService.setUserId(_user!.uid);
+          await _localStorageService.setUserName(_user!.displayName ?? '');
+          final userModel = await _userService.getUser(_user!.uid);
+          if (userModel != null && userModel.familyId.isNotEmpty) {
+            await _localStorageService.setFamilyId(userModel.familyId);
+          }
         }
       } else {
         // Handle web platform differently
@@ -128,8 +132,12 @@ final class AuthServiceImpl implements AuthService {
       _user = credentials.user;
       _localStorageService.setUserRole(UserRole.authenticated);
       if (_user != null) {
-        _localStorageService.setUserId(_user!.uid);
-        _localStorageService.setUserName(_user!.displayName ?? '');
+        await _localStorageService.setUserId(_user!.uid);
+        await _localStorageService.setUserName(_user!.displayName ?? '');
+        final userModel = await _userService.getUser(_user!.uid);
+        if (userModel != null && userModel.familyId.isNotEmpty) {
+          await _localStorageService.setFamilyId(userModel.familyId);
+        }
       }
       return _user;
     } on FirebaseAuthException catch (e) {
@@ -161,8 +169,12 @@ final class AuthServiceImpl implements AuthService {
 
       _localStorageService.setUserRole(UserRole.authenticated);
       if (credential.user != null) {
-        _localStorageService.setUserId(credential.user!.uid);
-        _localStorageService.setUserName(credential.user!.displayName ?? '');
+        await _localStorageService.setUserId(credential.user!.uid);
+        await _localStorageService.setUserName(credential.user!.displayName ?? '');
+        final userModel = await _userService.getUser(credential.user!.uid);
+        if (userModel != null && userModel.familyId.isNotEmpty) {
+          await _localStorageService.setFamilyId(userModel.familyId);
+        }
       }
       return credential.user;
     } catch (e) {

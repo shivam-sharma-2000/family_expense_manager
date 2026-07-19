@@ -1,3 +1,4 @@
+import 'package:expense_manager/features/tenant/presentation/bloc/room_bloc/room_bloc.dart';
 import 'package:get_it/get_it.dart';
 
 import 'data/datasources/local/tenant_local_data_source.dart';
@@ -28,10 +29,8 @@ void registerTenantModule(GetIt sl) {
 
   // Repository
   sl.registerLazySingleton<TenantRepository>(
-    () => TenantRepositoryImpl(
-      remoteDataSource: sl(),
-      localStorageService: sl(),
-    ),
+    () =>
+        TenantRepositoryImpl(remoteDataSource: sl(), localStorageService: sl()),
   );
 
   // Use Cases
@@ -46,8 +45,8 @@ void registerTenantModule(GetIt sl) {
 
   // Blocs
   sl.registerFactory(() => TenantBloc(getTenants: sl()));
-  sl.registerFactory(() => TenantDetailBloc(
-        getTenantBills: sl(),
-        getTenantPayments: sl(),
-      ));
+  sl.registerFactory(
+    () => TenantDetailBloc(getTenantBills: sl(), getTenantPayments: sl()),
+  );
+  sl.registerFactory(() => RoomBloc(repository: sl()));
 }

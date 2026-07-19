@@ -1,3 +1,4 @@
+import 'package:expense_manager/core/extensions/theme_extension.dart';
 import 'package:expense_manager/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -270,11 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: Text(
                           'Forgot Password?',
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xFF2563EB),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: context.theme.textTheme.bodyMedium
                         ),
                       ),
                     ),
@@ -288,8 +285,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          foregroundColor: Colors.white,
+                          backgroundColor: context.theme.colorScheme.primary,
+                          foregroundColor: context.theme.colorScheme.primary,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -307,9 +304,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               )
                             : Text(
                                 'Sign In',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
+                                style: context.theme.textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.w600,
+                                  color: context.theme.colorScheme.onPrimary
                                 ),
                               ),
                       ),
@@ -334,7 +331,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextSpan(
                                 text: 'Sign Up',
                                 style: GoogleFonts.poppins(
-                                  color: const Color(0xFF2563EB),
+                                  color: context.theme.colorScheme.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

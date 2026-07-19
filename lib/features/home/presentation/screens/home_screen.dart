@@ -195,9 +195,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildStatCard(String title, String value, Color color, dynamic icon) {
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: LedgerlyColors.borderLight),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F10233B),
@@ -205,46 +207,51 @@ class _HomeScreenState extends State<HomeScreen> {
             offset: Offset(0, 8),
           ),
         ],
-        border: Border.all(color: LedgerlyColors.borderLight),
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              width: 4,
-              color: color,
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            color: color,
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: color.withValues(alpha: 0.1),
+                    child: HugeIcon(
+                      icon: icon,
+                      color: color,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    value,
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: LedgerlyColors.navy950,
+                    ),
+                  ),
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: LedgerlyColors.inkSoftLight,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              backgroundColor: color.withValues(alpha: 0.1),
-              radius: 16,
-              child: HugeIcon(icon: icon, color: color, size: 16),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              value,
-              style: GoogleFonts.jetBrainsMono(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: LedgerlyColors.navy950,
-              ),
-            ),
-            Text(
-              title,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: LedgerlyColors.inkSoftLight,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
