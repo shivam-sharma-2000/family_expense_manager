@@ -3,17 +3,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:fpdart/fpdart.dart' as fp;
 import 'package:intl/intl.dart';
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/extensions/theme_extension.dart';
 import '../../../../core/routes/my_app_router_const.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/drawer.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../tenant/domain/entities/tenant_entity.dart';
 import '../../../tenant/domain/entities/room_entity.dart';
 import '../../../tenant/domain/entities/tenant_bill_entity.dart';
-import '../../../tenant/domain/repositories/tenant_repository.dart';
+import '../bloc/home_bloc.dart';
+import '../bloc/home_event.dart';
+import '../bloc/home_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,7 +25,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final _repository = sl<TenantRepository>();
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<HomeBloc>().add(LoadDashboard());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,42 +57,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       drawer: const HomeDrawer(),
-      body: StreamBuilder(
-        stream: _repository.getTenants(),
-        builder: (context, tenantsSnapshot) {
-          if (tenantsSnapshot.connectionState == ConnectionState.waiting) {
+      body: BlocBuilder<HomeBloc, HomeState>(
+        builder: (context, state) {
+          if (state.isLoading) {
             return const Center(child: CircularProgressIndicator(color: LedgerlyColors.gold));
           }
 
-          var tenants = <TenantEntity>[];
-          if (tenantsSnapshot.hasData) {
-            final either = tenantsSnapshot.data as fp.Either<dynamic, List<TenantEntity>>;
-            either.fold((_) {}, (list) => tenants = list);
+          if (state.error != null) {
+            return Center(child: Text('Error: ${state.error}'));
           }
 
-          return StreamBuilder(
-            stream: _repository.getRooms(),
-            builder: (context, roomsSnapshot) {
-              var rooms = <RoomEntity>[];
-              if (roomsSnapshot.hasData) {
-                final either = roomsSnapshot.data as fp.Either<dynamic, List<RoomEntity>>;
-                either.fold((_) {}, (list) => rooms = list);
-              }
-
-              return StreamBuilder(
-                stream: _repository.getAllBills(),
-                builder: (context, billsSnapshot) {
-                  var bills = <TenantBillEntity>[];
-                  if (billsSnapshot.hasData) {
-                    final either = billsSnapshot.data as fp.Either<dynamic, List<TenantBillEntity>>;
-                    either.fold((_) {}, (list) => bills = list);
-                  }
-
-                  return _buildDashboard(tenants, rooms, bills);
-                },
-              );
-            },
-          );
+          return _buildDashboard(state.tenants, state.rooms, state.bills);
         },
       ),
     );
@@ -128,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return RefreshIndicator(
       onRefresh: () async {
-        setState(() {});
+        context.read<HomeBloc>().add(LoadDashboard());
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),

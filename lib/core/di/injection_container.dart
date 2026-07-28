@@ -12,6 +12,8 @@ import 'package:expense_manager/features/user/presentation/bloc/user_bloc.dart';
 import 'package:expense_manager/features/family/data/repositories/family_repository_impl.dart';
 import 'package:expense_manager/features/family/domain/repositories/family_repository.dart';
 import 'package:expense_manager/features/family/presentation/bloc/family_bloc.dart';
+import 'package:expense_manager/features/home/presentation/bloc/home_bloc.dart';
+import 'package:expense_manager/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -40,6 +42,10 @@ Future<void> initDependencies() async {
   sl.registerFactory<UserBloc>(() => UserBloc(userRepository: sl()));
   sl.registerFactory<FamilyBloc>(
     () => FamilyBloc(familyRepository: sl(), userRepository: sl()),
+  );
+  sl.registerFactory<HomeBloc>(() => HomeBloc(repository: sl()));
+  sl.registerFactory<SyncBloc>(
+    () => SyncBloc(repository: sl(), localStorageService: sl()),
   );
   tenant_di.registerTenantModule(sl);
 }

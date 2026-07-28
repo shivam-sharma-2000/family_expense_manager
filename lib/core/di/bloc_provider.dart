@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/family/presentation/bloc/family_bloc.dart';
 import '../../features/tenant/presentation/bloc/room_bloc/room_bloc.dart';
+import '../../features/home/presentation/bloc/home_bloc.dart';
+import '../../features/sync/presentation/bloc/sync_bloc.dart';
 import '../../features/user/presentation/bloc/user_bloc.dart';
 import '../theme/bloc/theme_bloc.dart';
 import '../theme/bloc/theme_event.dart';
@@ -20,4 +22,6 @@ final blocProviders = [
   BlocProvider<TenantBloc>(create: (context) => sl<TenantBloc>()),
   BlocProvider<TenantDetailBloc>(create: (context) => sl<TenantDetailBloc>()),
   BlocProvider<RoomBloc>(create: (context) => sl<RoomBloc>()),
+  BlocProvider<HomeBloc>(create: (context) => sl<HomeBloc>()),
+  BlocProvider<SyncBloc>(create: (context) => sl<SyncBloc>()),
 ];
